@@ -38,9 +38,10 @@ public class LoginActivity extends AppCompatActivity {
             finish();
         });
 
-        // 🔹 Forgot password placeholder
+        // Forgot password
         tvForgotPassword.setOnClickListener(v ->
-                Toast.makeText(this, "Forgot password clicked!", Toast.LENGTH_SHORT).show());
+                startActivity(new Intent(LoginActivity.this, ForgotPasswordActivity.class))
+        );
     }
 
     // 🔹 Validation logic

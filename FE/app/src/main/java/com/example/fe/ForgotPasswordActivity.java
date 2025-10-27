@@ -1,6 +1,8 @@
 package com.example.fe;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Patterns;
 import android.widget.Button;
@@ -19,6 +21,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_forgot_password);
 
+        // Initialize views
         etForgotEmail = findViewById(R.id.etForgotEmail);
         btnNextForgot = findViewById(R.id.btnNextForgot);
         ivBack = findViewById(R.id.ivBack);
@@ -33,23 +36,25 @@ public class ForgotPasswordActivity extends AppCompatActivity {
     private void handleResetPassword() {
         String email = etForgotEmail.getText().toString().trim();
 
-        if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            etForgotEmail.setError("Enter a valid email");
+        // Validate email format
+        if (email.isEmpty()) {
+            etForgotEmail.setError("Email cannot be empty");
+            etForgotEmail.requestFocus();
+            return;
+        }
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            etForgotEmail.setError("Enter a valid email address");
             etForgotEmail.requestFocus();
             return;
         }
 
-        // You can integrate Firebase reset password here
-        Toast.makeText(this, "Password reset link sent to " + email, Toast.LENGTH_LONG).show();
+        // Success — show notification
+        Toast.makeText(this, "Verification code sent to " + email, Toast.LENGTH_SHORT).show();
 
-        // Example for Firebase:
-        // FirebaseAuth.getInstance().sendPasswordResetEmail(email)
-        //     .addOnSuccessListener(aVoid -> {
-        //         Toast.makeText(this, "Reset email sent", Toast.LENGTH_SHORT).show();
-        //         finish();
-        //     })
-        //     .addOnFailureListener(e ->
-        //         Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+        // Navigate to verification code screen
+        Intent intent = new Intent(ForgotPasswordActivity.this, VerificationCodeActivity.class);
+        intent.putExtra("email", email); // Optional: pass the email forward
+        startActivity(intent);
     }
 }
 
