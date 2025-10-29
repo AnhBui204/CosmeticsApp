@@ -4,11 +4,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.content.Intent;
 import android.util.Patterns;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.fe.ui.home.HomeActivity;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -38,17 +39,18 @@ public class LoginActivity extends AppCompatActivity {
             finish();
         });
 
-        // Forgot password
+        // 🔹 Forgot password
         tvForgotPassword.setOnClickListener(v ->
                 startActivity(new Intent(LoginActivity.this, ForgotPasswordActivity.class))
         );
     }
 
-    // 🔹 Validation logic
+    // 🔹 Handle login logic
     private void handleLogin() {
         String email = etLoginEmail.getText().toString().trim();
         String password = etLoginPassword.getText().toString();
 
+        // ✅ Basic validation
         if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             etLoginEmail.setError("Valid email required");
             etLoginEmail.requestFocus();
@@ -70,8 +72,11 @@ public class LoginActivity extends AppCompatActivity {
         // ✅ Success
         Toast.makeText(this, "Login Successful!", Toast.LENGTH_SHORT).show();
 
-        // Example: start MainActivity after successful login
-        // startActivity(new Intent(this, MainActivity.class));
-        // finish();
+        // 👉 Chuyển sang HomeActivity
+        Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
+        startActivity(intent);
+
+        // Đóng LoginActivity để không quay lại được
+        finish();
     }
 }
