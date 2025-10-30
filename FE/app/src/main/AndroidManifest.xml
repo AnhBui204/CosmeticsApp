@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FE" >
 
-        <activity android:name=".WelcomeActivity"
+        <activity android:name=".ui.category.CategoryActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -23,7 +23,9 @@
         <activity android:name=".ui.profile.ProfileSettingActivity"/>
         <activity android:name=".ui.favorite.FavoriteActivity"/>
         <activity android:name=".ui.profile.ProfileActivity"/>
-        <activity android:name=".ui.category.CategoryActivity"/>
+        <activity android:name=".WelcomeActivity"/>
+        <activity android:name=".ui.category.ProductListActivity" />
+        <activity android:name=".ui.category.ProductDetailActivity" />
         <activity android:name=".ui.home.HomeActivity"/>
         <activity android:name=".IntroActivity"/>
         <activity android:name=".LoginActivity"/>

@@ -1,13 +1,22 @@
 package com.example.fe.ui.home;
 
-public class ProductModel {
-    public String name, category, price;
-    public int image;
+import com.example.fe.ui.category.Category;
 
-    public ProductModel(String name, String category, String price, int image) {
+public class ProductModel {
+    private String name;
+    private String price;
+    private int image;
+    private Category category;
+
+    public ProductModel(String name, String price, int image, Category category) {
         this.name = name;
-        this.category = category;
         this.price = price;
         this.image = image;
+        this.category = category;
     }
+
+    public String getName() { return name; }
+    public String getPrice() { return price; }
+    public int getImage() { return image; }
+    public Category getCategory() { return category; }
 }
