@@ -3,7 +3,6 @@ package com.example.fe.ui.category;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -17,7 +16,6 @@ import com.example.fe.ui.favorite.FavoriteActivity;
 import com.example.fe.ui.home.HomeActivity;
 import com.example.fe.ui.profile.ProfileActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import android.widget.PopupMenu;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,8 +23,8 @@ import java.util.List;
 public class CategoryActivity extends AppCompatActivity {
 
     private RecyclerView recyclerCategoryProducts;
-    private ProductAdapter adapter;
-    private List<Product> productList;
+    private CategoryAdapter adapter;
+    private List<Category> categoryList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,20 +35,18 @@ public class CategoryActivity extends AppCompatActivity {
         recyclerCategoryProducts.setLayoutManager(new LinearLayoutManager(this));
 
         // Dữ liệu giả
-        productList = new ArrayList<>();
-        productList.add(new Product("Moisturizing Cream", "Hydrate and nourish your skin", "10 units", R.drawable.img_moisturizer));
-        productList.add(new Product("Lipstick", "Long-lasting and vibrant colors", "5 units", R.drawable.img_lipstick_red));
-        productList.add(new Product("Face Mask", "Revitalize your complexion", "20 units", R.drawable.img_face_mask));
-        productList.add(new Product("Sunscreen", "Protect your skin from UV rays", "15 units", R.drawable.img_promo_2));
-        productList.add(new Product("Perfume", "A scent that lasts all day", "8 units", R.drawable.img_deal_3));
+        categoryList = new ArrayList<>();
+        categoryList.add(new Category("Moisturizing Cream", "Hydrate and nourish your skin", "C01", R.drawable.img_moisturizer));
+        categoryList.add(new Category("Lipstick", "Long-lasting and vibrant colors", "C02", R.drawable.img_lipstick_red));
+        categoryList.add(new Category("Face Mask", "Revitalize your complexion", "C03", R.drawable.img_face_mask));
+        categoryList.add(new Category("Sunscreen", "Protect your skin from UV rays", "C04", R.drawable.img_promo_2));
+        categoryList.add(new Category("Perfume", "A scent that lasts all day", "C05", R.drawable.img_deal_3));
 
-        adapter = new ProductAdapter(productList);
+        adapter = new CategoryAdapter(categoryList);
         recyclerCategoryProducts.setAdapter(adapter);
 
         // BottomNavigationView setup
         BottomNavigationView bottomNav = findViewById(R.id.bottomNav);
-
-        // Đánh dấu tab Category là active
         bottomNav.getMenu().findItem(R.id.nav_categories).setChecked(true);
 
         bottomNav.setOnItemSelectedListener(new BottomNavigationView.OnItemSelectedListener() {
@@ -61,7 +57,6 @@ public class CategoryActivity extends AppCompatActivity {
                     startActivity(new Intent(CategoryActivity.this, HomeActivity.class));
                     return true;
                 } else if (id == R.id.nav_categories) {
-                    // Đang ở Category
                     return true;
                 } else if (id == R.id.nav_favourite) {
                     startActivity(new Intent(CategoryActivity.this, FavoriteActivity.class));
@@ -73,13 +68,9 @@ public class CategoryActivity extends AppCompatActivity {
                 return false;
             }
         });
-
     }
 
-
-
     private void logoutUser() {
-        // Ví dụ: quay về màn hình login
         Toast.makeText(this, "Logging out...", Toast.LENGTH_SHORT).show();
         startActivity(new Intent(this, LoginActivity.class));
         finish();
