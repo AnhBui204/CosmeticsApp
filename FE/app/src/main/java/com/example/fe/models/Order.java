@@ -1,4 +1,4 @@
-package com.example.fe;
+package com.example.fe.models;
 
 public class Order {
     private String orderNumber;
