@@ -6,7 +6,6 @@ import { Cart } from '../models/cartModel.js';
 
 // Hàm helper tạo token
 const generateToken = (id) => {
-    // Đảm bảo bạn đã định nghĩa JWT_SECRET trong file .env
     return jwt.sign({ id }, process.env.JWT_SECRET, {
         expiresIn: '30d', // Hết hạn sau 30 ngày
     });

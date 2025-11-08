@@ -6,6 +6,7 @@ import android.view.MenuItem;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import com.example.fe.MainActivity; // import MainActivity to route to fragment-hosting activity
 import com.example.fe.R;
 import com.example.fe.ui.category.CategoryActivity;
 import com.example.fe.ui.favorite.FavoriteActivity;
@@ -33,6 +34,24 @@ public class ProfileActivity extends AppCompatActivity {
                 startActivity(new Intent(ProfileActivity.this, ProfileSettingActivity.class));
             }
         });
+
+        // --- NEW: My Order click listener ---
+        View menuItemMyOrder = findViewById(R.id.menuItemMyOrder);
+        if (menuItemMyOrder != null) {
+            menuItemMyOrder.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // Start MainActivity and instruct it to show MyOrdersFragment
+                    Intent intent = new Intent(ProfileActivity.this, MainActivity.class);
+                    intent.putExtra("open_fragment", "orders");
+                    // Reuse existing MainActivity if present
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    startActivity(intent);
+                }
+            });
+        }
+        // --- END NEW ---
+
 
         // BottomNavigationView setup
         BottomNavigationView bottomNav = findViewById(R.id.bottomNav);

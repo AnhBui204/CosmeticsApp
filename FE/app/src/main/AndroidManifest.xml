@@ -12,13 +12,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FE" >
 
-        <activity android:name=".WelcomeActivity"
+            <activity android:name=".WelcomeActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".MainActivity"/>
+        <activity android:name=".OrdersActivity"/>
         <activity android:name=".ui.cart.ShoppingCartActivity"/>
         <activity android:name=".ui.category.CategoryActivity"/>
         <activity android:name=".ui.profile.ProfileSettingActivity"/>
