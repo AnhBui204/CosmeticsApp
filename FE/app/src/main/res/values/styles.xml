@@ -1,6 +1,41 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="OutlinedButton">
+    <style name="Chip.Base">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+
+        <item name="android:paddingLeft">14dp</item>
+        <item name="android:paddingRight">14dp</item>
+        <item name="android:paddingTop">8dp</item>
+        <item name="android:paddingBottom">8dp</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:layout_marginRight">8dp</item>
+        <item name="android:layout_marginEnd">8dp</item>
+    </style>
+
+    <!-- Default chip -->
+    <style name="Chip" parent="Chip.Outline" />
+
+    <style name="Chip.Filled" parent="Chip.Base">
+        <item name="android:background">@drawable/bg_chip_filled</item>
+        <item name="android:textColor">@android:color/white</item>
+    </style>
+
+    <style name="Chip.Outline" parent="Chip.Base">
+        <item name="android:background">@drawable/bg_chip_outline</item>
+        <item name="android:textColor">@color/gray_700</item>
+    </style>
+
+    <style name="MyOrdersTabTextAppearance" parent="TextAppearance.Design.Tab">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="textAllCaps">false</item>
+    </style>
+    <style name="RatingBarPink" parent="Widget.AppCompat.RatingBar">
+        <item name="colorControlNormal">#E0E0E0</item>
+        <item name="colorControlActivated">@color/pink_500</item>
+    </style>
+
+        <style name="OutlinedButton">
         <item name="android:background">@drawable/bg_outlined_button</item>
         <item name="android:textColor">#5A6470</item>
     </style>

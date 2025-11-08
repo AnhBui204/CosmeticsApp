@@ -9,6 +9,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.fe.ui.home.HomeActivity;
 import com.example.fe.R;
 
 public class LoginActivity extends AppCompatActivity {
@@ -22,34 +23,35 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        // 🔹 Initialize UI
+        // Initialize UI
         etLoginEmail = findViewById(R.id.etLoginEmail);
         etLoginPassword = findViewById(R.id.etLoginPassword);
         btnLogin = findViewById(R.id.btnLogin);
         tvForgotPassword = findViewById(R.id.tvForgotPassword);
         tvSignupLink = findViewById(R.id.tvSignupLink);
 
-        // 🔹 Login button click
+        // Login button click
         btnLogin.setOnClickListener(v -> handleLogin());
 
-        // 🔹 Navigate to Signup
+        // Navigate to Signup
         tvSignupLink.setOnClickListener(v -> {
             Intent intent = new Intent(LoginActivity.this, SignupActivity.class);
             startActivity(intent);
             finish();
         });
 
-        // 🔹 Forgot password
+        // Forgot password
         tvForgotPassword.setOnClickListener(v ->
                 startActivity(new Intent(LoginActivity.this, ForgotPasswordActivity.class))
         );
     }
 
-    // 🔹 Validation logic
+    // Handle login logic
     private void handleLogin() {
         String email = etLoginEmail.getText().toString().trim();
         String password = etLoginPassword.getText().toString();
 
+        // Basic validation
         if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             etLoginEmail.setError("Valid email required");
             etLoginEmail.requestFocus();
@@ -68,10 +70,10 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        // ✅ Success
+        // Success
         Toast.makeText(this, "Login Successful!", Toast.LENGTH_SHORT).show();
 
-        // 🔹 Navigate to HomePage
+        // Navigate to HomePage
         Intent intent = new Intent(LoginActivity.this, HomePageActivity.class);
         startActivity(intent);
         finish();

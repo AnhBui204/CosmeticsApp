@@ -12,6 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FE" >
 
+            <!-- <activity android:name=".WelcomeActivity" -->
         <activity android:name=".activities.LoginActivity"
             android:exported="true">
             <intent-filter>
@@ -19,6 +20,22 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".MainActivity"/>
+        <activity android:name=".OrdersActivity"/>
+        <activity android:name=".ui.cart.ShoppingCartActivity"/>
+        <activity android:name=".ui.category.CategoryActivity"/>
+        <activity android:name=".ui.profile.ProfileSettingActivity"/>
+        <activity android:name=".ui.favorite.FavoriteActivity"/>
+        <activity android:name=".ui.profile.ProfileActivity"/>
+        <activity android:name=".ui.category.ProductListActivity" />
+        <activity android:name=".ui.category.ProductDetailActivity" />
+        <activity android:name=".ui.home.HomeActivity"/>
+        <activity android:name=".IntroActivity"/>
+        <activity android:name=".LoginActivity"/>
+        <activity android:name=".SignupActivity" />
+        <activity android:name=".ForgotPasswordActivity" />
+        <activity android:name=".VerificationCodeActivity" />
+        <activity android:name=".CreateNewPasswordActivity" />
         <activity android:name=".activities.SignupActivity" />
         <activity android:name=".activities.ForgotPasswordActivity" />
         <activity android:name=".activities.VerificationCodeActivity" />
