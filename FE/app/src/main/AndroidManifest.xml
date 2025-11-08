@@ -12,18 +12,19 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FE" >
 
-        <activity android:name=".LoginActivity"
+        <activity android:name=".activities.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity android:name=".SignupActivity" />
-        <activity android:name=".ForgotPasswordActivity" />
-        <activity android:name=".VerificationCodeActivity" />
-        <activity android:name=".CreateNewPasswordActivity" />
+        <activity android:name=".activities.SignupActivity" />
+        <activity android:name=".activities.ForgotPasswordActivity" />
+        <activity android:name=".activities.VerificationCodeActivity" />
+        <activity android:name=".activities.CreateNewPasswordActivity" />
+        <activity android:name=".activities.HomePageActivity" />
+        <activity android:name=".activities.ProductDetailsActivity" />
 
     </application>
 
