@@ -1,4 +1,4 @@
-package com.example.fe.activities;
+package com.example.fe.ui.auth.createNewPass;
 
 import android.app.Dialog;
 import android.content.Intent;
@@ -15,8 +15,12 @@ import android.widget.ImageView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.fe.R;
+import com.example.fe.ui.home.HomeActivity;
 
 public class CreateNewPasswordActivity extends AppCompatActivity {
+
+    private static final String PASSWORD_PATTERN =
+            "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&._-])[A-Za-z\\d@$!%*?&._-]{6,}$";
 
     private EditText etNewPassword, etConfirmPassword;
     private ImageView ivToggleNew, ivToggleConfirm;
@@ -46,6 +50,12 @@ public class CreateNewPasswordActivity extends AppCompatActivity {
             if (newPassword.isEmpty() || confirmPassword.isEmpty()) {
                 etNewPassword.setError("Please enter password");
                 etConfirmPassword.setError("Please confirm password");
+                return;
+            }
+
+            if (!newPassword.matches(PASSWORD_PATTERN)) {
+                etNewPassword.setError("Password must be at least 6 chars, include uppercase, lowercase, number & special character");
+                etNewPassword.requestFocus();
                 return;
             }
 
@@ -88,7 +98,7 @@ public class CreateNewPasswordActivity extends AppCompatActivity {
         btnBrowseHome.setOnClickListener(v -> {
             dialog.dismiss();
             // Navigate to home
-            startActivity(new Intent(CreateNewPasswordActivity.this, HomePageActivity.class));
+            startActivity(new Intent(CreateNewPasswordActivity.this, HomeActivity.class));
             finish();
         });
 

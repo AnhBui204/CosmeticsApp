@@ -1,4 +1,4 @@
-package com.example.fe.activities;
+package com.example.fe.ui.auth.verification;
 
 import android.app.Dialog;
 import android.content.Intent;
@@ -15,6 +15,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.fe.R;
+import com.example.fe.ui.auth.createNewPass.CreateNewPasswordActivity;
+import com.example.fe.ui.home.HomeActivity;
 
 public class VerificationCodeActivity extends AppCompatActivity {
 
@@ -99,7 +101,7 @@ public class VerificationCodeActivity extends AppCompatActivity {
         btnBrowseHome.setOnClickListener(v -> {
             dialog.dismiss();
             // Navigate to home
-            startActivity(new Intent(VerificationCodeActivity.this, HomePageActivity.class));
+            startActivity(new Intent(VerificationCodeActivity.this, HomeActivity.class));
             finish();
         });
 

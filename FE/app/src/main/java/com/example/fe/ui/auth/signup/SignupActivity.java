@@ -1,4 +1,4 @@
-package com.example.fe.activities;
+package com.example.fe.ui.auth.signup;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
@@ -11,6 +11,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.fe.R;
+import com.example.fe.ui.auth.verification.VerificationCodeActivity;
 
 public class SignupActivity extends AppCompatActivity {
 

@@ -13,7 +13,7 @@
         android:theme="@style/Theme.FE" >
 
             <!-- <activity android:name=".WelcomeActivity" -->
-        <activity android:name=".activities.LoginActivity"
+        <activity android:name=".ui.auth.login.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -36,11 +36,10 @@
         <activity android:name=".ForgotPasswordActivity" />
         <activity android:name=".VerificationCodeActivity" />
         <activity android:name=".CreateNewPasswordActivity" />
-        <activity android:name=".activities.SignupActivity" />
-        <activity android:name=".activities.ForgotPasswordActivity" />
-        <activity android:name=".activities.VerificationCodeActivity" />
-        <activity android:name=".activities.CreateNewPasswordActivity" />
-        <activity android:name=".activities.HomePageActivity" />
+        <activity android:name=".ui.auth.signup.SignupActivity" />
+        <activity android:name=".ui.auth.forgotPassword.ForgotPasswordActivity" />
+        <activity android:name=".ui.auth.verification.VerificationCodeActivity" />
+        <activity android:name=".ui.auth.createNewPass.CreateNewPasswordActivity" />
         <activity android:name=".activities.ProductDetailsActivity" />
 
     </application>

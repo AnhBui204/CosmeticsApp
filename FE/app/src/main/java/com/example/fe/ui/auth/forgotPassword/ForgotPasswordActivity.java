@@ -1,4 +1,4 @@
-package com.example.fe.activities;
+package com.example.fe.ui.auth.forgotPassword;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.example.fe.R;
+import com.example.fe.ui.auth.verification.VerificationCodeActivity;
 
 public class ForgotPasswordActivity extends AppCompatActivity {
 

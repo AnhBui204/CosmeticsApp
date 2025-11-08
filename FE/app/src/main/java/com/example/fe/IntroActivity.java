@@ -4,10 +4,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.LinearLayout;
 import android.widget.ImageView;
-import android.widget.Button;
+
 import com.google.android.material.button.MaterialButton;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager2.widget.ViewPager2;
+
+import com.example.fe.ui.auth.login.LoginActivity;
 
 public class IntroActivity extends AppCompatActivity {
     private ViewPager2 viewPager;

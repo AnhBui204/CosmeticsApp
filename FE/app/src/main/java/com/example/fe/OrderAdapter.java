@@ -8,8 +8,8 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment; // <-- IMPORT THÊM
-import androidx.fragment.app.FragmentActivity; // <-- IMPORT THÊM
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.fe.models.Order;

@@ -1,4 +1,4 @@
-package com.example.fe.activities;
+package com.example.fe.ui.auth.login;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
@@ -9,6 +9,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.fe.ui.auth.signup.SignupActivity;
+import com.example.fe.ui.auth.forgotPassword.ForgotPasswordActivity;
 import com.example.fe.ui.home.HomeActivity;
 import com.example.fe.R;
 
@@ -74,7 +76,7 @@ public class LoginActivity extends AppCompatActivity {
         Toast.makeText(this, "Login Successful!", Toast.LENGTH_SHORT).show();
 
         // Navigate to HomePage
-        Intent intent = new Intent(LoginActivity.this, HomePageActivity.class);
+        Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
         startActivity(intent);
         finish();
     }

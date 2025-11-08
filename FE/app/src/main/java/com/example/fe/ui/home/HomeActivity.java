@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.fe.LoginActivity;
+import com.example.fe.ui.auth.login.LoginActivity;
 import com.example.fe.R;
 import com.example.fe.ui.category.Category;
 import com.example.fe.ui.category.CategoryActivity;
