@@ -1,7 +1,9 @@
 package com.example.fe.ui.category;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -10,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.fe.R;
 import com.example.fe.data.AppData;
+import com.example.fe.ui.favorite.FavoriteActivity;
 import com.example.fe.ui.home.ProductModel;
 import com.example.fe.ui.home.RecommendedAdapter;
 
@@ -38,6 +41,12 @@ public class ProductListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.customer_productlist);
+
+        ImageView imgCart = findViewById(R.id.btnCart);
+        imgCart.setOnClickListener(v -> {
+            Intent intent = new Intent(ProductListActivity.this, com.example.fe.ui.cart.ShoppingCartActivity.class);
+            startActivity(intent);
+        });
 
         // Back button
         ImageButton btnBack = findViewById(R.id.btnBack);

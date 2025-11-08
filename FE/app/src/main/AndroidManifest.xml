@@ -12,18 +12,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FE" >
 
-        <activity android:name=".ui.category.CategoryActivity"
+        <activity android:name=".WelcomeActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
+        <activity android:name=".ui.cart.ShoppingCartActivity"/>
+        <activity android:name=".ui.category.CategoryActivity"/>
         <activity android:name=".ui.profile.ProfileSettingActivity"/>
         <activity android:name=".ui.favorite.FavoriteActivity"/>
         <activity android:name=".ui.profile.ProfileActivity"/>
-        <activity android:name=".WelcomeActivity"/>
         <activity android:name=".ui.category.ProductListActivity" />
         <activity android:name=".ui.category.ProductDetailActivity" />
         <activity android:name=".ui.home.HomeActivity"/>

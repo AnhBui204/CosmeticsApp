@@ -37,6 +37,13 @@ public class FavoriteActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.customer_favorite);
 
+        ImageView imgCart = findViewById(R.id.imgCart);
+        imgCart.setOnClickListener(v -> {
+            Intent intent = new Intent(FavoriteActivity.this, com.example.fe.ui.cart.ShoppingCartActivity.class);
+            startActivity(intent);
+        });
+
+
         // BottomNavigationView setup
         BottomNavigationView bottomNav = findViewById(R.id.bottomNav);
         bottomNav.getMenu().findItem(R.id.nav_favourite).setChecked(true);

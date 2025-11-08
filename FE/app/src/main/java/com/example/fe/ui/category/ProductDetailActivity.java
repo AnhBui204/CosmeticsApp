@@ -2,6 +2,7 @@ package com.example.fe.ui.category;
 
 
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -12,6 +13,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.fe.R;
+import com.example.fe.ui.favorite.FavoriteActivity;
 
 public class ProductDetailActivity extends AppCompatActivity {
 
@@ -19,6 +21,12 @@ public class ProductDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_product_detail);
+
+        ImageView imgCart = findViewById(R.id.btnCart);
+        imgCart.setOnClickListener(v -> {
+            Intent intent = new Intent(ProductDetailActivity.this, com.example.fe.ui.cart.ShoppingCartActivity.class);
+            startActivity(intent);
+        });
 
         ImageButton btnBack = findViewById(R.id.btnBack);
         ImageButton btnFav  = findViewById(R.id.btnFav);

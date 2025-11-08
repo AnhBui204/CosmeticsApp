@@ -22,6 +22,8 @@ public class ProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.customer_profile);
 
+
+
         // Khởi tạo icon setting
         ivSettings = findViewById(R.id.ivSettings);
         ivSettings.setOnClickListener(new View.OnClickListener() {

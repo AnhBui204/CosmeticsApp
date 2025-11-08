@@ -3,6 +3,7 @@ package com.example.fe.ui.category;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -30,6 +31,12 @@ public class CategoryActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_category);
+
+        ImageView imgCart = findViewById(R.id.imgCart);
+        imgCart.setOnClickListener(v -> {
+            Intent intent = new Intent(CategoryActivity.this, com.example.fe.ui.cart.ShoppingCartActivity.class);
+            startActivity(intent);
+        });
 
         recyclerCategoryProducts = findViewById(R.id.recyclerCategoryProducts);
         recyclerCategoryProducts.setLayoutManager(new LinearLayoutManager(this));

@@ -3,6 +3,7 @@ package com.example.fe.ui.home;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -35,6 +36,12 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+
+        ImageView imgCart = findViewById(R.id.imgCart);
+        imgCart.setOnClickListener(v -> {
+            Intent intent = new Intent(HomeActivity.this, com.example.fe.ui.cart.ShoppingCartActivity.class);
+            startActivity(intent);
+        });
 
         // 1) Khởi tạo dữ liệu Category trước
         initCategories();
