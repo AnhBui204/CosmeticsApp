@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="10dp"
+    android:gravity="center_vertical">
+
+    <!-- Hình sản phẩm -->
+    <ImageView
+        android:id="@+id/imgProduct"
+        android:layout_width="110dp"
+        android:layout_height="110dp"
+        android:scaleType="centerCrop"
+        android:background="#F7A5A5"
+        android:src="@drawable/ic_image_placeholder"
+        android:layout_marginEnd="16dp"
+    android:radius="50dp"
+    android:clipToOutline="true"/>
+
+    <!-- Thông tin sản phẩm -->
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1">
+
+        <TextView
+            android:id="@+id/tvProductName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Big vs Small Fishes"
+            android:textStyle="bold"
+            android:textSize="17sp"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/tvProductDesc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fresh from sea"
+            android:textSize="13sp"
+            android:textColor="#7A7A7A"
+            android:layout_marginTop="4dp"/>
+
+        <TextView
+            android:id="@+id/tvProductPrice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="5 units"
+            android:textSize="18sp"
+            android:textColor="#F25C67"
+            android:layout_marginTop="6dp"/>
+
+    </LinearLayout>
+</LinearLayout>
