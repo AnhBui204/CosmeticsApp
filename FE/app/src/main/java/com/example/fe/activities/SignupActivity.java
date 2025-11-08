@@ -1,4 +1,4 @@
-package com.example.fe;
+package com.example.fe.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
@@ -10,8 +10,12 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.fe.R;
+
 public class SignupActivity extends AppCompatActivity {
 
+    private static final String PASSWORD_PATTERN =
+            "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&._-])[A-Za-z\\d@$!%*?&._-]{6,}$";
     private EditText etName, etEmail, etPassword, etConfirmPassword;
     private Button btnSignUp;
     private TextView tvLoginLink;
@@ -21,7 +25,7 @@ public class SignupActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
 
-        // 🔹 Initialize Views
+        // Initialize Views
         etName = findViewById(R.id.etName);
         etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
@@ -29,7 +33,7 @@ public class SignupActivity extends AppCompatActivity {
         btnSignUp = findViewById(R.id.btnSignUp);
         tvLoginLink = findViewById(R.id.tvLoginLink);
 
-        // 🔹 Sign Up Button Click
+        // Sign Up Button Click
         btnSignUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -37,19 +41,53 @@ public class SignupActivity extends AppCompatActivity {
             }
         });
 
-        // 🔹 Navigate to Login
+        // Navigate to Verification Code screen
         tvLoginLink.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Example: navigate to LoginActivity
-                Intent intent = new Intent(SignupActivity.this, LoginActivity.class);
+                Intent intent = new Intent(SignupActivity.this, VerificationCodeActivity.class);
+                intent.putExtra("origin", "signup");
                 startActivity(intent);
-                finish();
             }
+        });
+
+        // Toggle password visibility
+        etPassword.setOnTouchListener((v, event) -> {
+            if (event.getRawX() >= (etPassword.getRight() - etPassword.getCompoundDrawables()[2].getBounds().width())) {
+                togglePasswordVisibility(etPassword);
+                return true;
+            }
+            return false;
+        });
+
+        etConfirmPassword.setOnTouchListener((v, event) -> {
+            if (event.getRawX() >= (etConfirmPassword.getRight() - etConfirmPassword.getCompoundDrawables()[2].getBounds().width())) {
+                togglePasswordVisibility(etConfirmPassword);
+                return true;
+            }
+            return false;
         });
     }
 
-    // 🔹 Sign Up Validation Logic
+    private void togglePasswordVisibility(EditText editText) {
+        if (editText.getInputType() ==
+                (android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD)) {
+
+            // Show password
+            editText.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+            editText.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_eye, 0);
+        } else {
+            // Hide password
+            editText.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
+            editText.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_eye_off, 0);
+        }
+
+        // Move cursor to end after toggling
+        editText.setSelection(editText.getText().length());
+    }
+
+
+    // Sign Up Validation Logic
     private void handleSignUp() {
         String name = etName.getText().toString().trim();
         String email = etEmail.getText().toString().trim();
@@ -75,8 +113,8 @@ public class SignupActivity extends AppCompatActivity {
             return;
         }
 
-        if (password.length() < 6) {
-            etPassword.setError("Password must be at least 6 characters");
+        if (!password.matches(PASSWORD_PATTERN)) {
+            etPassword.setError("Password must be at least 6 chars, include uppercase, lowercase, number & special character");
             etPassword.requestFocus();
             return;
         }
@@ -90,7 +128,13 @@ public class SignupActivity extends AppCompatActivity {
         // --- Success ---
         Toast.makeText(this, "Sign Up Successful!", Toast.LENGTH_SHORT).show();
 
-        // Example: You can now send data to your API or Firebase here
+        // Send data to your API or Firebase here
         // registerUser(name, email, password);
+
+        // navigate to email verification screen
+        Intent intent = new Intent(SignupActivity.this, VerificationCodeActivity.class);
+        intent.putExtra("origin", "signup");
+        startActivity(intent);
+        finish();
     }
 }

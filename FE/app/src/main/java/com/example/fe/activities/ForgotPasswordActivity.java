@@ -1,4 +1,4 @@
-package com.example.fe;
+package com.example.fe.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -9,6 +9,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import com.example.fe.R;
 
 public class ForgotPasswordActivity extends AppCompatActivity {
 
@@ -53,7 +55,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
 
         // Navigate to verification code screen
         Intent intent = new Intent(ForgotPasswordActivity.this, VerificationCodeActivity.class);
-        intent.putExtra("email", email); // Optional: pass the email forward
+        intent.putExtra("origin", "forgot");
         startActivity(intent);
     }
 }

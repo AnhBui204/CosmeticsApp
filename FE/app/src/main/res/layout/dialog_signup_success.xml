@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="24dp"
+    android:background="@drawable/bg_dialog_round_top"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:src="@drawable/ic_success_password"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:contentDescription="success" />
+
+    <TextView
+        android:text="Your account has been created!!"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#2E2E2E"
+        android:layout_marginTop="16dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:text="Welcome to Comsetic! Discover now!"
+        android:textSize="14sp"
+        android:textColor="#8B8B8B"
+        android:layout_marginTop="6dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/btnBrowseHome"
+        android:text="Browse home"
+        android:backgroundTint="#F7A5A5"
+        android:textColor="@android:color/white"
+        android:layout_marginTop="20dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingVertical="12dp" />
+
+</LinearLayout>
