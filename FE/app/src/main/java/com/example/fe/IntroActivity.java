@@ -4,8 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.LinearLayout;
 import android.widget.ImageView;
-import android.widget.Button; // Nếu dùng Button thường
-import com.google.android.material.button.MaterialButton; // Nếu dùng MaterialButton
+import android.widget.Button;
+import com.google.android.material.button.MaterialButton;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager2.widget.ViewPager2;
 

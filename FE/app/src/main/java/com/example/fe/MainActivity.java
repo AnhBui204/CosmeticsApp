@@ -24,8 +24,6 @@ public class MainActivity extends AppCompatActivity {
         boolean openOrders = intent != null && "orders".equals(intent.getStringExtra(EXTRA_OPEN_FRAGMENT));
 
         // 2. Chỉ tải Fragment khi Activity được tạo lần đầu tiên.
-        // Nếu không có 'if (savedInstanceState == null)',
-        // một Fragment mới sẽ được tạo chồng lên Fragment cũ mỗi khi xoay màn hình.
         if (savedInstanceState == null) {
             // 3. Tạo một instance của Fragment bạn muốn hiển thị
             Fragment fragmentToShow;

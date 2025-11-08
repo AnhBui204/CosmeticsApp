@@ -14,7 +14,6 @@ public class WelcomeActivity extends AppCompatActivity {
 
         Button btnGetStarted = findViewById(R.id.btnGetStarted);
         btnGetStarted.setOnClickListener(v -> {
-            // Ví dụ: chuyển sang MainActivity
             startActivity(new Intent(WelcomeActivity.this, IntroActivity.class));
         });
     }
