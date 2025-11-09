@@ -13,6 +13,7 @@ import com.example.fe.ui.auth.signup.SignupActivity;
 import com.example.fe.ui.auth.forgotPassword.ForgotPasswordActivity;
 import com.example.fe.ui.home.HomeActivity;
 import com.example.fe.R;
+import com.example.fe.ui.seller.SellerHomeActivity;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -72,7 +73,24 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        // Success
+        // Simple credential routing for demo: two hardcoded accounts
+        if (email.equalsIgnoreCase("seller@gmail.com") && password.equals("123456")) {
+            Toast.makeText(this, "Seller login successful", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(LoginActivity.this, SellerHomeActivity.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
+
+        if (email.equalsIgnoreCase("customer@gmail.com") && password.equals("123456")) {
+            Toast.makeText(this, "Customer login successful", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
+
+        // Fallback: existing behavior (go to Home)
         Toast.makeText(this, "Login Successful!", Toast.LENGTH_SHORT).show();
 
         // Navigate to HomePage

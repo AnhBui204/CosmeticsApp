@@ -30,12 +30,13 @@
         <activity android:name=".ui.category.ProductListActivity" />
         <activity android:name=".ui.category.ProductDetailActivity" />
         <activity android:name=".ui.home.HomeActivity"/>
+        <activity android:name=".ui.seller.SellerHomeActivity"/>
+        <activity android:name=".ui.seller.SellerOrderDetailActivity"/>
         <activity android:name=".IntroActivity"/>
         <activity android:name=".LoginActivity"/>
         <activity android:name=".SignupActivity" />
         <activity android:name=".ForgotPasswordActivity" />
         <activity android:name=".VerificationCodeActivity" />
-        <activity android:name=".CreateNewPasswordActivity" />
         <activity android:name=".ui.auth.signup.SignupActivity" />
         <activity android:name=".ui.auth.forgotPassword.ForgotPasswordActivity" />
         <activity android:name=".ui.auth.verification.VerificationCodeActivity" />
