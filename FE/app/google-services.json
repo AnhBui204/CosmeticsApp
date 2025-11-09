@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "235020274831",
+    "project_id": "khanhluan123456",
+    "storage_bucket": "khanhluan123456.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:235020274831:android:12aecf63a28dde289234fa",
+        "android_client_info": {
+          "package_name": "com.comestic.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCTzlk4HkYVghcEqMl05E28hFoQw50HVSE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

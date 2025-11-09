@@ -4,7 +4,7 @@ import {
     updateMyProfile,
     updateFcmToken,
     getWishlist,
-    toggleWishlist
+    toggleWishlist,changePassword
 } from '../controllers/userController.js';
 import { isAuthenticated } from '../middleware/authmiddleware.js';
 
@@ -18,7 +18,7 @@ router.get('/me', getMyProfile);
 
 // PUT /api/users/me
 router.put('/me', updateMyProfile);
-
+router.put('/change-password', changePassword);
 // POST /api/users/fcm-token
 router.post('/fcm-token', updateFcmToken);
 

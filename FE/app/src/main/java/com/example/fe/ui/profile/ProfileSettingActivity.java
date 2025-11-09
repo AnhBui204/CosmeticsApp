@@ -1,101 +1,156 @@
 package com.example.fe.ui.profile;
 
-import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
+
 import com.example.fe.R;
+import com.example.fe.data.UserData;
+import com.example.fe.utils.SessionManager;
 
 public class ProfileSettingActivity extends AppCompatActivity {
 
     private ImageView ivBack, imgAvatar, ivCamera;
-    private EditText etFirstName, etLastName, etEmail, etGender, etPhone;
+    private EditText etFullName, etEmail, etPhone;
+    private EditText etOldPassword, etNewPassword;
+    private LinearLayout layoutChangePassword;
     private Button btnSaveChange;
+    private Button btnShowChangePassword;
+    private SessionManager sessionManager;
+    private UserData currentUser;
+    private ProfileViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.customer_profile_setting);
 
-        // Khởi tạo views
+        sessionManager = new SessionManager(this);
+        currentUser = sessionManager.getUser();
+        viewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
+
+        initViews();
+        bindUserData();
+        observeViewModel();
+        setupListeners();
+    }
+
+    private void initViews() {
         ivBack = findViewById(R.id.ivBack);
         imgAvatar = findViewById(R.id.imgAvatar);
         ivCamera = findViewById(R.id.ivCamera);
-        etFirstName = findViewById(R.id.etFirstName);
-        etLastName = findViewById(R.id.etLastName);
-        etEmail = findViewById(R.id.etEmail);
-        etGender = findViewById(R.id.etGender);
-        etPhone = findViewById(R.id.etPhone);
-        btnSaveChange = findViewById(R.id.btnSaveChange);
 
-        // Xử lý nút Back → chỉ cần finish()
+        etFullName = findViewById(R.id.etFullName);
+        etEmail = findViewById(R.id.etEmail);
+        etPhone = findViewById(R.id.etPhone);
+
+        etOldPassword = findViewById(R.id.etOldPassword);
+        etNewPassword = findViewById(R.id.etNewPassword);
+
+        layoutChangePassword = findViewById(R.id.layoutChangePassword);
+        btnSaveChange = findViewById(R.id.btnSaveChange);
+        btnShowChangePassword = findViewById(R.id.btnShowChangePassword);
+
+        // Mặc định ẩn layout đổi mật khẩu
+        layoutChangePassword.setVisibility(View.GONE);
+
+        if ("google".equals(currentUser.getLoginProvider())) {
+            btnShowChangePassword.setVisibility(View.GONE); // Google login thì ẩn nút
+            layoutChangePassword.setVisibility(View.GONE);
+        } else {
+            btnShowChangePassword.setVisibility(View.VISIBLE); // Email/password thì hiện nút
+        }
+    }
+
+
+    private void bindUserData() {
+        if (currentUser != null) {
+            etFullName.setText(currentUser.getFullName());
+            etEmail.setText(currentUser.getEmail());
+            etPhone.setText(currentUser.getPhoneNumber() != null ? currentUser.getPhoneNumber() : "");
+        }
+    }
+
+    private void setupListeners() {
         ivBack.setOnClickListener(v -> finish());
 
-        // Xử lý click vào camera icon để đổi ảnh đại diện
         ivCamera.setOnClickListener(v ->
-                Toast.makeText(ProfileSettingActivity.this, "Change profile picture", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Change profile picture", Toast.LENGTH_SHORT).show()
         );
+        btnShowChangePassword.setOnClickListener(v -> {
+            if (layoutChangePassword.getVisibility() == View.GONE) {
+                layoutChangePassword.setVisibility(View.VISIBLE);
+                btnShowChangePassword.setText("Cancel Change Password");
+            } else {
+                layoutChangePassword.setVisibility(View.GONE);
+                btnShowChangePassword.setText("Change Password");
+                etOldPassword.setText("");
+                etNewPassword.setText("");
+            }
+        });
 
-        // Xử lý click vào Gender để chọn giới tính
-        etGender.setOnClickListener(v -> showGenderDialog());
+        btnSaveChange.setOnClickListener(v -> {
+            String fullName = etFullName.getText().toString().trim();
+            String phone = etPhone.getText().toString().trim();
 
-        // Xử lý nút Save Change
-        btnSaveChange.setOnClickListener(v -> saveProfileChanges());
+            if (!validateInputs(fullName, phone)) return;
+
+            if (layoutChangePassword.getVisibility() == View.VISIBLE) {
+                String oldPassword = etOldPassword.getText().toString().trim();
+                String newPassword = etNewPassword.getText().toString().trim();
+
+                if (oldPassword.isEmpty() || newPassword.isEmpty()) {
+                    Toast.makeText(this, "Vui lòng nhập đầy đủ mật khẩu", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // Đổi mật khẩu trước
+                viewModel.changePassword(oldPassword, newPassword, result -> {
+                    if (!result) {
+                        Toast.makeText(this, "Đổi mật khẩu thất bại", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    // Nếu đổi mật khẩu thành công, update profile
+                    viewModel.updateProfile(fullName, phone);
+                });
+            } else {
+                // Chỉ update profile
+                viewModel.updateProfile(fullName, phone);
+            }
+        });
     }
 
-    // Hiển thị dialog chọn giới tính
-    private void showGenderDialog() {
-        String[] genders = {"Male", "Female", "Other"};
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Select Gender")
-                .setItems(genders, (dialog, which) -> etGender.setText(genders[which]))
-                .show();
-    }
-
-    // Lưu thay đổi thông tin profile
-    private void saveProfileChanges() {
-        String firstName = etFirstName.getText().toString().trim();
-        String lastName = etLastName.getText().toString().trim();
-        String email = etEmail.getText().toString().trim();
-        String gender = etGender.getText().toString().trim();
-        String phone = etPhone.getText().toString().trim();
-
-        if (firstName.isEmpty()) {
-            etFirstName.setError("First name is required");
-            etFirstName.requestFocus();
-            return;
+    private boolean validateInputs(String fullName, String phone) {
+        if (fullName.isEmpty()) {
+            etFullName.setError("Full name is required");
+            etFullName.requestFocus();
+            return false;
         }
-
-        if (lastName.isEmpty()) {
-            etLastName.setError("Last name is required");
-            etLastName.requestFocus();
-            return;
-        }
-
-        if (email.isEmpty()) {
-            etEmail.setError("Email is required");
-            etEmail.requestFocus();
-            return;
-        }
-
-        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            etEmail.setError("Please enter a valid email");
-            etEmail.requestFocus();
-            return;
-        }
-
         if (phone.isEmpty()) {
             etPhone.setError("Phone is required");
             etPhone.requestFocus();
-            return;
+            return false;
         }
+        return true;
+    }
 
-        Toast.makeText(this, "Profile updated successfully!", Toast.LENGTH_SHORT).show();
+    private void observeViewModel() {
+        viewModel.getUpdateResponse().observe(this, user -> {
+            if (user != null) {
+                user.setLoginProvider(currentUser.getLoginProvider());
+                sessionManager.saveUser(user);
+                Toast.makeText(this, "Cập nhật thành công!", Toast.LENGTH_SHORT).show();
+                finish();
+            } else {
+                Toast.makeText(this, "Cập nhật thất bại!", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

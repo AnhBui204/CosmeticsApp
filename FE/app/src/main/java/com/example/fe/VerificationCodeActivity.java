@@ -4,10 +4,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 public class VerificationCodeActivity extends AppCompatActivity {
 
@@ -27,9 +30,40 @@ public class VerificationCodeActivity extends AppCompatActivity {
 
         setupCodeAutoMove();
 
-        btnNextCode.setOnClickListener(v ->
-                startActivity(new Intent(VerificationCodeActivity.this, CreateNewPasswordActivity.class))
-        );
+        btnNextCode.setOnClickListener(v -> {
+            String otp = etCode1.getText().toString().trim()
+                    + etCode2.getText().toString().trim()
+                    + etCode3.getText().toString().trim()
+                    + etCode4.getText().toString().trim();
+
+            if (otp.length() != 4) {
+                Toast.makeText(VerificationCodeActivity.this, "Please enter 4-digit OTP", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            String email = getIntent().getStringExtra("email"); // email từ màn ForgotPassword
+
+            // Gọi API verify OTP
+            ResetPasswordViewModel viewModel = new ViewModelProvider(this).get(ResetPasswordViewModel.class);
+            viewModel.verifyOTP(email, otp);
+
+            viewModel.getVerifyResponse().observe(this, response -> {
+                if (response.isSuccess()) {
+                    // Lấy resetToken từ backend
+                    String resetToken = response.getResetToken();
+                    Log.d("VerificationCode", "Received resetToken: " + resetToken);
+                    Toast.makeText(this, "ResetToken: " + resetToken, Toast.LENGTH_LONG).show();
+
+
+                    Intent intent = new Intent(VerificationCodeActivity.this, ResetPasswordActivity.class);
+                    intent.putExtra("resetToken", resetToken);
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(VerificationCodeActivity.this, response.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+
     }
 
     private void setupCodeAutoMove() {
