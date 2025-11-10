@@ -32,9 +32,10 @@ export const updateMyProfile = asyncHandler(async (req, res) => {
 
         // Logic để thêm địa chỉ mới (nếu có)
         // Body gửi lên có thể chứa: { "newAddress": { "street": "...", "city": "..." } }
-        if (req.body.newAddress) {
-            user.addresses.push(req.body.newAddress);
+       if (req.body.addresses && Array.isArray(req.body.addresses)) {
+            user.addresses = req.body.addresses;
         }
+
         // (Bạn có thể mở rộng logic để sửa/xóa địa chỉ)
 
         const updatedUser = await user.save();

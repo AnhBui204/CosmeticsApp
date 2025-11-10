@@ -7,6 +7,7 @@ import com.example.fe.api.UserService;
 import com.example.fe.data.UserData;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import retrofit2.Call;
@@ -22,10 +23,11 @@ public class UserRepository {
     }
 
 
-    public void updateProfile(String fullName, String phoneNumber, UpdateCallback callback) {
-        Map<String, String> body = new HashMap<>();
+    public void updateProfile(String fullName, String phoneNumber, List<UserData.Address> addresses, UpdateCallback callback) {
+        Map<String, Object> body = new HashMap<>();
         body.put("fullName", fullName);
         body.put("phoneNumber", phoneNumber);
+        body.put("addresses", addresses); // backend phải chấp nhận List<Address> dạng JSON
 
         userService.updateProfile(body).enqueue(new Callback<UserData>() {
             @Override
@@ -42,9 +44,8 @@ public class UserRepository {
                 callback.onError(t);
             }
         });
-
-
     }
+
     public void changePassword(String oldPassword, String newPassword, ChangePassCallback callback) {
         Map<String, String> body = new HashMap<>();
         body.put("oldPassword", oldPassword);

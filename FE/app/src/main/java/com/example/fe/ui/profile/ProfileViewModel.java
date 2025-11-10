@@ -10,6 +10,8 @@ import androidx.lifecycle.MutableLiveData;
 import com.example.fe.data.UserData;
 import com.example.fe.repository.UserRepository;
 
+import java.util.List;
+
 public class ProfileViewModel extends AndroidViewModel {
 
     private final UserRepository userRepository;
@@ -20,8 +22,8 @@ public class ProfileViewModel extends AndroidViewModel {
         userRepository = new UserRepository(application);
     }
 
-    public void updateProfile(String fullName, String phoneNumber) {
-        userRepository.updateProfile(fullName, phoneNumber, new UserRepository.UpdateCallback() {
+    public void updateProfile(String fullName, String phoneNumber, List<UserData.Address> addresses) {
+        userRepository.updateProfile(fullName, phoneNumber, addresses, new UserRepository.UpdateCallback() {
             @Override
             public void onSuccess(UserData user) {
                 updateResponse.postValue(user);
@@ -33,6 +35,7 @@ public class ProfileViewModel extends AndroidViewModel {
             }
         });
     }
+
     public void changePassword(String oldPassword, String newPassword, UserRepository.ChangePassCallback callback) {
         userRepository.changePassword(oldPassword, newPassword, callback);
     }

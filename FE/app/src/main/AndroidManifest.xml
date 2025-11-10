@@ -36,6 +36,21 @@
         <activity android:name=".ForgotPasswordActivity" />
         <activity android:name=".VerificationCodeActivity" />
         <activity android:name=".ResetPasswordActivity" />
+        <activity
+            android:name=".PaymentResultActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="payment-result"
+                    android:scheme="myapp" />
+            </intent-filter>
+        </activity>
+
 
     </application>
 

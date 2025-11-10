@@ -11,6 +11,7 @@ import cartRoutes from './routes/cartRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
 import voucherRoutes from './routes/voucherRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
 // import adminRoutes from './routes/adminRoutes.js';
 
 // --- Middleware xử lý lỗi (nên đặt ở file riêng) ---
@@ -35,7 +36,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/vouchers', voucherRoutes);
 // app.use('/api/admin', adminRoutes);
-
+app.use('/api/payment', paymentRoutes);
 // --- Route test ---
 app.get('/', (req, res) => {
     res.send('API cho App Mỹ phẩm đang chạy...');

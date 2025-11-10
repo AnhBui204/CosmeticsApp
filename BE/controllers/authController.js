@@ -16,7 +16,7 @@ const generateToken = (id) => {
 
 // --- Đăng ký ---
 export const registerUser = asyncHandler(async (req, res) => {
-    const { fullName, email, password, phoneNumber,role } = req.body;
+    const { fullName, email, password, phoneNumber, role, street, city, district, ward } = req.body;
 
     if (!fullName || !email || !password) {
         res.status(400);
@@ -31,13 +31,23 @@ export const registerUser = asyncHandler(async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await User.create({
-        fullName,
-        email,
-        password: hashedPassword,
-        phoneNumber,
-        role
-    });
+   const user = await User.create({
+    fullName,
+    email,
+    password: hashedPassword,
+    phoneNumber,
+    role,
+    addresses: [
+        {
+            street,
+            city,
+            district,
+            ward,
+            isDefault: true 
+        }
+    ]
+});
+
 
     await Cart.create({ userId: user._id, items: [] });
 
@@ -49,10 +59,13 @@ export const registerUser = asyncHandler(async (req, res) => {
             fullName: user.fullName,
             email: user.email,
             role: user.role,
+            phoneNumber: user.phoneNumber,
+            address: user.addresses,
             token: generateToken(user._id),
         }
     });
 });
+
 
 // --- Đăng nhập ---
 export const loginUser = asyncHandler(async (req, res) => {
@@ -61,6 +74,8 @@ export const loginUser = asyncHandler(async (req, res) => {
     const user = await User.findOne({ email });
 
     if (user && await bcrypt.compare(password, user.password)) {
+  
+     
         res.json({
             success: true,
             message: 'Đăng nhập thành công',
@@ -69,8 +84,9 @@ export const loginUser = asyncHandler(async (req, res) => {
                 fullName: user.fullName,
                 email: user.email,
                 role: user.role,
-                phoneNumber:user.phoneNumber,
+                phoneNumber: user.phoneNumber,
                 wishlist: user.wishlist,
+                addresses: user.addresses, 
                 token: generateToken(user._id),
             }
         });
@@ -81,6 +97,7 @@ export const loginUser = asyncHandler(async (req, res) => {
         });
     }
 });
+
 
 export const googleLogin = asyncHandler(async (req, res) => {
     const { idToken,role } = req.body;
@@ -107,12 +124,14 @@ export const googleLogin = asyncHandler(async (req, res) => {
         role,
         googleId,
         loginProvider: 'google',
+        addresses: [],
     });
     await Cart.create({ userId: user._id, items: [] });
 } else if (!user.loginProvider || user.loginProvider === 'email') {
     // Nếu user tồn tại nhưng chưa có googleId / loginProvider thì update
     user.googleId = googleId;
     user.loginProvider = 'google';
+       if (!user.addresses) user.addresses = [];
     await user.save();
 }
 
@@ -127,6 +146,7 @@ export const googleLogin = asyncHandler(async (req, res) => {
                 role: user.role,
                   phoneNumber: user.phoneNumber,
                 loginProvider: user.loginProvider,
+                 addresses: user.addresses || [],
                 token: generateToken(user._id),
             },
         };

@@ -13,7 +13,7 @@ public class GoogleUserData {
     private String loginProvider = "google";
     private String phoneNumber; // optional
     private List<String> wishlist; // optional
-
+    private List<UserData.Address> addresses;
     // getters + setters
     public String get_id() { return _id; }
     public String getFullName() { return fullName; }
@@ -22,6 +22,8 @@ public class GoogleUserData {
     public String getRole() { return role; }
     public String getToken() { return token; }
     public String getLoginProvider() { return loginProvider; }
+    public List<UserData.Address> getAddresses() { return addresses; }
+    public void setAddresses(List<UserData.Address> addresses) { this.addresses = addresses; }
     public void setLoginProvider(String loginProvider) { this.loginProvider = loginProvider; }
     public void set_id(String _id) { this._id = _id; }
     public void setFullName(String fullName) { this.fullName = fullName; }

@@ -26,6 +26,8 @@ public class SignupActivity extends AppCompatActivity {
     private EditText etPhone;
     private RadioGroup rgRole;
     private RadioButton rbCustomer, rbSeller;
+    private EditText etStreet, etCity, etDistrict, etWard;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,6 +43,11 @@ public class SignupActivity extends AppCompatActivity {
         rgRole = findViewById(R.id.rgRole);
         rbCustomer = findViewById(R.id.rbCustomer);
         rbSeller = findViewById(R.id.rbSeller);
+        etStreet = findViewById(R.id.etStreet);
+        etCity = findViewById(R.id.etCity);
+        etDistrict = findViewById(R.id.etDistrict);
+        etWard = findViewById(R.id.etWard);
+
         viewModel = new ViewModelProvider(this).get(SignupViewModel.class);
 
         btnSignUp.setOnClickListener(v -> handleSignUp());
@@ -69,6 +76,11 @@ public class SignupActivity extends AppCompatActivity {
         String password = etPassword.getText().toString();
         String confirmPassword = etConfirmPassword.getText().toString();
         String phoneNumber = etPhone.getText().toString().trim();
+        String street = etStreet.getText().toString().trim();
+        String city = etCity.getText().toString().trim();
+        String district = etDistrict.getText().toString().trim();
+        String ward = etWard.getText().toString().trim();
+
         String role = rbCustomer.isChecked() ? "customer" : "seller";
 
         // Validate trước
@@ -108,8 +120,19 @@ public class SignupActivity extends AppCompatActivity {
             etPhone.requestFocus();
             return;
         }
+        if (street.isEmpty()) { etStreet.setError("Street required"); etStreet.requestFocus(); return; }
+        if (city.isEmpty()) { etCity.setError("City required"); etCity.requestFocus(); return; }
+        if (district.isEmpty()) { etDistrict.setError("District required"); etDistrict.requestFocus(); return; }
+        if (ward.isEmpty()) { etWard.setError("Ward required"); etWard.requestFocus(); return; }
 
         // Gọi signup duy nhất sau khi validate xong
-        viewModel.signup(name, email, password, phoneNumber, role);
+        viewModel.signup(
+                name, email, password, phoneNumber, role,
+                etStreet.getText().toString().trim(),
+                etCity.getText().toString().trim(),
+                etDistrict.getText().toString().trim(),
+                etWard.getText().toString().trim()
+        );
+
     }
 }

@@ -9,6 +9,7 @@ import com.example.fe.api.AuthService;
 import com.example.fe.models.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import retrofit2.Call;
@@ -25,9 +26,11 @@ public class AuthRepository {
         authService = ApiClient.getAuthClient(context).create(AuthService.class);
     }
 
-    public Call<SignupResponse> signup(String fullName, String email, String password, String phoneNumber, String role) {
-        return authService.signup(new SignupRequest(fullName, email, password, phoneNumber, role));
+    public Call<SignupResponse> signup(String fullName, String email, String password,
+                                       String phoneNumber, String role, List<SignupRequest.Address> addresses) {
+        return authService.signup(new SignupRequest(fullName, email, password, phoneNumber, role, addresses));
     }
+
 
     public Call<LoginResponse> login(String email, String password) {
         return authService.login(new LoginRequest(email, password));

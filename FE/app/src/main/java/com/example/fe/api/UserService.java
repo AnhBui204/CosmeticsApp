@@ -12,7 +12,8 @@ public interface UserService {
 
 
     @PUT("api/users/me")
-    Call<UserData> updateProfile(@Body Map<String, String> body);
+    Call<UserData> updateProfile(@Body Map<String, Object> body);
+
     @PUT("api/users/change-password")
     Call<Void> changePassword(@Body Map<String, String> body);
 }

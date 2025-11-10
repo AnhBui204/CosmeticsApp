@@ -2,6 +2,9 @@ package com.example.fe.data;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class UserData {
 
     @SerializedName("_id")
@@ -20,21 +23,50 @@ public class UserData {
 
     @SerializedName("token")
     private String token;
+    @SerializedName("addresses")
+    private List<Address> addresses;
 
     private String loginProvider;
     public UserData() {
         // constructor mặc định
     }
+    public static class Address {
+        private String street;
+        private String ward;
+        private String district;
+        private String city;
+        private boolean isDefault;
+
+        // Getter & Setter
+        public String getStreet() { return street; }
+        public void setStreet(String street) { this.street = street; }
+
+        public String getWard() { return ward; }
+        public void setWard(String ward) { this.ward = ward; }
+
+        public String getDistrict() { return district; }
+        public void setDistrict(String district) { this.district = district; }
+
+        public String getCity() { return city; }
+        public void setCity(String city) { this.city = city; }
+
+        public boolean isDefault() { return isDefault; }
+        public void setDefault(boolean aDefault) { isDefault = aDefault; }
+    }
+    public List<Address> getAddresses() { return addresses; }
+    public void setAddresses(List<Address> addresses) { this.addresses = addresses; }
 
     public UserData(GoogleUserData googleUser) {
         this._id = googleUser.get_id();
         this.fullName = googleUser.getFullName();
         this.email = googleUser.getEmail();
-        this.phoneNumber=googleUser.getPhoneNumber();
+        this.phoneNumber = googleUser.getPhoneNumber();
         this.role = googleUser.getRole();
         this.token = googleUser.getToken();
         this.loginProvider = googleUser.getLoginProvider();
+        this.addresses = googleUser.getAddresses() != null ? googleUser.getAddresses() : new ArrayList<>();
     }
+
 
 
     public UserData(String _id, String fullName, String email, String role, String token) {

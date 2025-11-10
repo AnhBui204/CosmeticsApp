@@ -1,5 +1,7 @@
 package com.example.fe.models;
 
+import java.util.List;
+
 public class SignupResponse {
     private boolean success;
     private String message;
@@ -30,24 +32,40 @@ public class SignupResponse {
         private String email;
         private String role;
         private String token;
+        private List<Address> addresses; // thêm
+
+        public static class Address {
+            private String street;
+            private String city;
+            private String district;
+            private String ward;
+            private boolean isDefault;
+
+            public Address() { } // default constructor
+
+            // Getter & Setter
+            public String getStreet() { return street; }
+            public void setStreet(String street) { this.street = street; }
+
+            public String getCity() { return city; }
+            public void setCity(String city) { this.city = city; }
+
+            public String getDistrict() { return district; }
+            public void setDistrict(String district) { this.district = district; }
+
+            public String getWard() { return ward; }
+            public void setWard(String ward) { this.ward = ward; }
+
+            public boolean isDefault() { return isDefault; }
+            public void setDefault(boolean isDefault) { this.isDefault = isDefault; }
+        }
 
         // Default constructor
         public SignupData() { }
 
-        // Getter và Setter
-        public String getId() { return _id; }
-        public void setId(String _id) { this._id = _id; }
-
-        public String getFullName() { return fullName; }
-        public void setFullName(String fullName) { this.fullName = fullName; }
-
-        public String getEmail() { return email; }
-        public void setEmail(String email) { this.email = email; }
-
-        public String getRole() { return role; }
-        public void setRole(String role) { this.role = role; }
-
-        public String getToken() { return token; }
-        public void setToken(String token) { this.token = token; }
+        // Getter & Setter cho addresses
+        public List<Address> getAddresses() { return addresses; }
+        public void setAddresses(List<Address> addresses) { this.addresses = addresses; }
     }
+
 }
