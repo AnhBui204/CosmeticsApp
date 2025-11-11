@@ -22,29 +22,29 @@ public class AppData {
         categoryList.add(new Category("Perfume", "A scent that lasts all day", "C05", R.drawable.img_deal_3));
 
         // C01 — Moisturizing Cream
-        productList.add(new ProductModel("Kem Dưỡng Ẩm Ban Ngày", "$18", R.drawable.img_moisturizer, getCategoryById("C01")));
-        productList.add(new ProductModel("Kem Dưỡng Ẩm Ban Đêm", "$22", R.drawable.img_moisturizer, getCategoryById("C01")));
-        productList.add(new ProductModel("Gel Dưỡng Da Aloe Vera", "$14", R.drawable.img_moisturizer, getCategoryById("C01")));
+        productList.add(new ProductModel("Kem Dưỡng Ẩm Ban Ngày", "$18", null, R.drawable.img_moisturizer, getCategoryById("C01")));
+        productList.add(new ProductModel("Kem Dưỡng Ẩm Ban Đêm", "$22", null, R.drawable.img_moisturizer, getCategoryById("C01")));
+        productList.add(new ProductModel("Gel Dưỡng Da Aloe Vera", "$14", null, R.drawable.img_moisturizer, getCategoryById("C01")));
 
         // C02 — Lipstick
-        productList.add(new ProductModel("Son Môi Đỏ Classic", "$15", R.drawable.img_lipstick_red, getCategoryById("C02")));
-        productList.add(new ProductModel("Son Hồng Pastel", "$16", R.drawable.img_lipstick_red, getCategoryById("C02")));
-        productList.add(new ProductModel("Son Nude Matte", "$18", R.drawable.img_lipstick_red, getCategoryById("C02")));
+        productList.add(new ProductModel("Son Môi Đỏ Classic", "$15", null, R.drawable.img_lipstick_red, getCategoryById("C02")));
+        productList.add(new ProductModel("Son Hồng Pastel", "$16", null, R.drawable.img_lipstick_red, getCategoryById("C02")));
+        productList.add(new ProductModel("Son Nude Matte", "$18", null, R.drawable.img_lipstick_red, getCategoryById("C02")));
 
         // C03 — Face Mask
-        productList.add(new ProductModel("Mặt Nạ Dưỡng Da Vitamin C", "$12", R.drawable.img_face_mask, getCategoryById("C03")));
-        productList.add(new ProductModel("Mặt Nạ Collagen", "$14", R.drawable.img_face_mask, getCategoryById("C03")));
-        productList.add(new ProductModel("Clay Mask Giảm Dầu Nhờn", "$10", R.drawable.img_face_mask, getCategoryById("C03")));
+        productList.add(new ProductModel("Mặt Nạ Dưỡng Da Vitamin C", "$12", null, R.drawable.img_face_mask, getCategoryById("C03")));
+        productList.add(new ProductModel("Mặt Nạ Collagen", "$14", null, R.drawable.img_face_mask, getCategoryById("C03")));
+        productList.add(new ProductModel("Clay Mask Giảm Dầu Nhờn", "$10", null, R.drawable.img_face_mask, getCategoryById("C03")));
 
         // C04 — Sunscreen
-        productList.add(new ProductModel("Kem Chống Nắng SPF50+", "$20", R.drawable.img_promo_2, getCategoryById("C04")));
-        productList.add(new ProductModel("Sữa Chống Nắng SPF35", "$18", R.drawable.img_promo_2, getCategoryById("C04")));
-        productList.add(new ProductModel("Xịt Chống Nắng Body", "$22", R.drawable.img_promo_2, getCategoryById("C04")));
+        productList.add(new ProductModel("Kem Chống Nắng SPF50+", "$20", null, R.drawable.img_promo_2, getCategoryById("C04")));
+        productList.add(new ProductModel("Sữa Chống Nắng SPF35", "$18", null, R.drawable.img_promo_2, getCategoryById("C04")));
+        productList.add(new ProductModel("Xịt Chống Nắng Body", "$22", null, R.drawable.img_promo_2, getCategoryById("C04")));
 
         // C05 — Perfume
-        productList.add(new ProductModel("Nước Hoa Hương Hoa Hồng", "$30", R.drawable.img_deal_3, getCategoryById("C05")));
-        productList.add(new ProductModel("Nước Hoa Gỗ Trầm Nam Tính", "$35", R.drawable.img_deal_3, getCategoryById("C05")));
-        productList.add(new ProductModel("Nước Hoa Mùi Trái Cây Tươi Mát", "$28", R.drawable.img_deal_3, getCategoryById("C05")));
+        productList.add(new ProductModel("Nước Hoa Hương Hoa Hồng", "$30", null, R.drawable.img_deal_3, getCategoryById("C05")));
+        productList.add(new ProductModel("Nước Hoa Gỗ Trầm Nam Tính", "$35", null, R.drawable.img_deal_3, getCategoryById("C05")));
+        productList.add(new ProductModel("Nước Hoa Mùi Trái Cây Tươi Mát", "$28", null, R.drawable.img_deal_3, getCategoryById("C05")));
 
     }
 
@@ -89,7 +89,7 @@ public class AppData {
 
     private static int parsePrice(String priceStr) {
         if (priceStr == null) return Integer.MAX_VALUE;
-        try { return Integer.parseInt(priceStr.replace("$","").replace(",","").trim()); }
+        try { return Integer.parseInt(priceStr.replace("$","").replace(",","" ).trim()); }
         catch (Exception e) { return Integer.MAX_VALUE; }
     }
 }

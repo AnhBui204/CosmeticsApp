@@ -60,11 +60,11 @@ public class ShoppingCartActivity extends AppCompatActivity {
         cartItems = new ArrayList<>();
 
         Category makeup = new Category("Makeup", "Son môi cao cấp", "CAT01", R.drawable.img_lipstick_red);
-        cartItems.add(new ProductModel("Son môi đỏ", "$7.90", R.drawable.img_lipstick_red, makeup));
-        cartItems.add(new ProductModel("Kem nền sáng", "$12.50", R.drawable.img_moisturizer, makeup));
-        cartItems.add(new ProductModel("Phấn má hồng", "$9.56", R.drawable.img_deal_3, makeup));
-        cartItems.add(new ProductModel("Phấn phủ kiềm dầu", "$6.00", R.drawable.img_deal_2, makeup));
-        cartItems.add(new ProductModel("Chì kẻ mày", "$5.99", R.drawable.img_lipstick_red, makeup));
+        cartItems.add(new ProductModel("Son môi đỏ", "$7.90", null, R.drawable.img_lipstick_red, makeup));
+        cartItems.add(new ProductModel("Kem nền sáng", "$12.50", null, R.drawable.img_moisturizer, makeup));
+        cartItems.add(new ProductModel("Phấn má hồng", "$9.56", null, R.drawable.img_deal_3, makeup));
+        cartItems.add(new ProductModel("Phấn phủ kiềm dầu", "$6.00", null, R.drawable.img_deal_2, makeup));
+        cartItems.add(new ProductModel("Chì kẻ mày", "$5.99", null, R.drawable.img_lipstick_red, makeup));
 
         // Ban đầu chỉ hiển thị 4 sản phẩm
         visibleItems = new ArrayList<>(cartItems.subList(0, Math.min(4, cartItems.size())));

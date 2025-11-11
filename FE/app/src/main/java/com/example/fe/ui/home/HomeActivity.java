@@ -93,10 +93,11 @@ public class HomeActivity extends AppCompatActivity {
 
     private List<ProductModel> buildRecommended() {
         List<ProductModel> list = new ArrayList<>();
-        list.add(new ProductModel("Son Môi Đỏ", "$15", R.drawable.img_lipstick_red, getCategoryById("C02")));
-        list.add(new ProductModel("Kem Dưỡng Ẩm", "$20", R.drawable.img_moisturizer, getCategoryById("C01")));
-        list.add(new ProductModel("Sữa Rửa Mặt", "$10", R.drawable.img_facewash, getCategoryById("C01")));
-        list.add(new ProductModel("Mặt Nạ Dưỡng Da", "$12", R.drawable.img_face_mask, getCategoryById("C03")));
+        // use new constructor: (name, price, imageUrl, imageRes, category)
+        list.add(new ProductModel("Son Môi Đỏ", "$15", null, R.drawable.img_lipstick_red, getCategoryById("C02")));
+        list.add(new ProductModel("Kem Dưỡng Ẩm", "$20", null, R.drawable.img_moisturizer, getCategoryById("C01")));
+        list.add(new ProductModel("Sữa Rửa Mặt", "$10", null, R.drawable.img_facewash, getCategoryById("C01")));
+        list.add(new ProductModel("Mặt Nạ Dưỡng Da", "$12", null, R.drawable.img_face_mask, getCategoryById("C03")));
         return list;
     }
 

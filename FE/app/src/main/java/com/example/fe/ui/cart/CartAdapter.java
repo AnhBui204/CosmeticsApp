@@ -10,6 +10,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.fe.R;
 import com.example.fe.ui.home.ProductModel;
 
@@ -37,7 +38,19 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
 
         holder.tvName.setText(product.getName());
         holder.tvPrice.setText(product.getPrice());
-        holder.imgProduct.setImageResource(product.getImage());
+        // Load image: prefer network imageUrl, fallback to drawable
+        String imageUrl = product.getImageUrl();
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            Glide.with(holder.itemView.getContext())
+                    .load(imageUrl)
+                    .placeholder(R.drawable.ic_image_placeholder)
+                    .error(R.drawable.ic_image_placeholder)
+                    .into(holder.imgProduct);
+        } else {
+            holder.imgProduct.setImageResource(product.getImageRes());
+        }
+
+        // set initial quantity from model
 
         holder.btnMinus.setOnClickListener(v -> {
             int quantity = Integer.parseInt(holder.tvQuantity.getText().toString());

@@ -31,4 +31,13 @@ public interface ApiService {
 
     @GET("api/categories")
     Call<List<Category>> getCategories();
+
+    @GET("api/categories/{id}/products")
+    Call<ProductsResponse> getProductsByCategory(
+            @Path("id") String categoryId,
+            @Query("page") int page,
+            @Query("limit") int limit,
+            @Query("sort") String sort
+    );
+
 }

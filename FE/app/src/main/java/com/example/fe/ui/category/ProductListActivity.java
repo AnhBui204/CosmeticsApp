@@ -2,128 +2,119 @@ package com.example.fe.ui.category;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.fe.R;
-import com.example.fe.data.AppData;
-import com.example.fe.ui.favorite.FavoriteActivity;
+import com.example.fe.models.Product;
+import com.example.fe.models.ProductsResponse;
+import com.example.fe.network.ApiClient;
+import com.example.fe.network.ApiService;
+import com.example.fe.ui.cart.ShoppingCartActivity;
 import com.example.fe.ui.home.ProductModel;
 import com.example.fe.ui.home.RecommendedAdapter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class ProductListActivity extends AppCompatActivity {
 
-    private TextView tvGreeting;
+    private TextView tvGreeting, chipPopular, chipLowPrice;
     private RecyclerView recyclerProducts;
-
-    // Chips
-    private TextView chipPopular, chipLowPrice;
-
-    // Data
-    private final List<ProductModel> baseList = new ArrayList<>();
+    private RecommendedAdapter adapter;
     private final List<ProductModel> currentList = new ArrayList<>();
 
-    private RecommendedAdapter adapter;
     private String categoryId;
+    private ApiService apiService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.customer_productlist);
 
-        ImageView imgCart = findViewById(R.id.btnCart);
-        imgCart.setOnClickListener(v -> {
-            Intent intent = new Intent(ProductListActivity.this, com.example.fe.ui.cart.ShoppingCartActivity.class);
-            startActivity(intent);
-        });
-
-        // Back button
-        ImageButton btnBack = findViewById(R.id.btnBack);
-        btnBack.setOnClickListener(v -> finish());
-
-        // Views
+        // --- Setup ---
         tvGreeting = findViewById(R.id.tvGreeting);
         recyclerProducts = findViewById(R.id.recyclerProducts);
         recyclerProducts.setLayoutManager(new GridLayoutManager(this, 2));
 
-        // Chips
-        chipPopular  = findViewById(R.id.chipPopular);
+        chipPopular = findViewById(R.id.chipPopular);
         chipLowPrice = findViewById(R.id.chipLowPrice);
 
-        // Category param
+        apiService = ApiClient.getClient().create(ApiService.class);
+
+        // Lấy categoryId từ Intent
         categoryId = getIntent().getStringExtra("categoryId");
 
-        // ✅ Set title từ AppData
-        Category cat = AppData.getCategoryById(categoryId);
-        tvGreeting.setText(cat != null ? cat.getName() : "Products");
+        // --- Navigation ---
+        ImageButton btnBack = findViewById(R.id.btnBack);
+        btnBack.setOnClickListener(v -> finish());
 
-        // ✅ Lấy data từ AppData thay vì tạo lại
-        baseList.clear();
-        baseList.addAll(AppData.getProductsByCategory(categoryId));
+        ImageView btnCart = findViewById(R.id.btnCart);
+        btnCart.setOnClickListener(v -> startActivity(new Intent(this, ShoppingCartActivity.class)));
 
-        currentList.clear();
-        currentList.addAll(baseList);
-
+        // --- Adapter ---
         adapter = new RecommendedAdapter(currentList);
         recyclerProducts.setAdapter(adapter);
 
-        // Handle chip click
-        List<TextView> chips = Arrays.asList(chipPopular, chipLowPrice);
-        setSelectedChip(chips, chipPopular);
-        applyChipAction("Popular");
+        // --- Load sản phẩm từ API ---
+        loadProducts(categoryId, null);
 
-        for (TextView chip : chips) {
-            chip.setOnClickListener(v -> {
-                TextView clicked = (TextView) v;
-                setSelectedChip(chips, clicked);
-                applyChipAction(clicked.getText().toString());
-            });
-        }
+        // --- Chips sort ---
+        chipPopular.setOnClickListener(v -> loadProducts(categoryId, null)); // mặc định sort theo mới nhất
+        chipLowPrice.setOnClickListener(v -> loadProducts(categoryId, "price_asc"));
     }
 
-    private void setSelectedChip(List<TextView> chips, TextView selected) {
-        for (TextView c : chips) c.setSelected(c == selected);
-    }
+    private void loadProducts(String categoryId, String sortType) {
+        // Gọi API
+        Call<ProductsResponse> call = apiService.getProductsByCategory(categoryId, 1, 50, sortType);
+        call.enqueue(new Callback<ProductsResponse>() {
+            @Override
+            public void onResponse(Call<ProductsResponse> call, Response<ProductsResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    ProductsResponse res = response.body();
+                    List<Product> products = res.getProducts();
 
-    private void applyChipAction(String label) {
-        switch (label) {
-            case "Popular":
-                resetToBase();
-                break;
-            case "Low Price":
-                sortByPriceAsc();
-                break;
-        }
-        adapter.notifyDataSetChanged();
-    }
+                    currentList.clear();
+                    for (Product p : products) {
+                        String imageUrl = (p.getImages() != null && !p.getImages().isEmpty())
+                                ? p.getImages().get(0)
+                                : null;
 
-    private void resetToBase() {
-        currentList.clear();
-        currentList.addAll(baseList);
-    }
+                        currentList.add(new ProductModel(
+                                p.getName(),
+                                "$" + p.getPrice(),
+                                imageUrl,
+                                R.drawable.ic_image_placeholder,
+                                null
+                        ));
+                        // set backend id on model
+                        currentList.get(currentList.size() - 1).setId(p.getId());
+                    }
 
-    private void sortByPriceAsc() {
-        resetToBase();
-        Collections.sort(currentList, Comparator.comparingInt(p -> parsePrice(p.getPrice())));
-    }
+                    adapter.notifyDataSetChanged();
+                    tvGreeting.setText("Products (" + currentList.size() + ")");
+                } else {
+                    Toast.makeText(ProductListActivity.this, "Không tải được sản phẩm", Toast.LENGTH_SHORT).show();
+                }
+            }
 
-    private int parsePrice(String priceStr) {
-        if (priceStr == null) return Integer.MAX_VALUE;
-        try {
-            return Integer.parseInt(priceStr.replace("$","").replace(",","").trim());
-        } catch (Exception e) {
-            return Integer.MAX_VALUE;
-        }
+            @Override
+            public void onFailure(Call<ProductsResponse> call, Throwable t) {
+                Toast.makeText(ProductListActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
     }
 }
