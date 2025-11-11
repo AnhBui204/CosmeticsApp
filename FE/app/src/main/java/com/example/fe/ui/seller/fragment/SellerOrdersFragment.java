@@ -1,7 +1,5 @@
-package com.example.fe.ui.seller;
+package com.example.fe.ui.seller.fragment;
 
-import android.content.Context;
-import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
@@ -19,11 +17,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.fe.R;
 import com.example.fe.models.Order;
+import com.example.fe.ui.seller.SellerOrderDetailActivity;
 
 import java.util.ArrayList;
 import java.util.List;
