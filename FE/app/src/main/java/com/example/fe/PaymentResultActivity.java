@@ -3,10 +3,13 @@ package com.example.fe;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.fe.utils.SessionManager;
 
 import org.json.JSONObject;
 
@@ -44,25 +47,16 @@ public class PaymentResultActivity extends AppCompatActivity {
     private void handleIntent(Intent intent) {
         Uri uri = intent.getData();
         if (uri != null && "myapp".equals(uri.getScheme())) {
-            String status = uri.getQueryParameter("status"); // "success" hoặc "cancel"
             String orderCode = uri.getQueryParameter("orderCode");
 
-            if (orderCode != null && status != null) {
-                updateOrderOnServer(orderCode, status);
+            if (orderCode != null) {
+                fetchOrderStatus(orderCode); // gọi backend lấy status
             }
 
-            if ("success".equals(status)) {
-                tvMessage.setText("✅ Thanh toán thành công!");
-                tvMessage.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
-            } else {
-                tvMessage.setText("❌ Thanh toán thất bại!");
-                tvMessage.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
-            }
-
-
-            btnDone.setVisibility(android.view.View.VISIBLE); // hiện nút quay về
+            btnDone.setVisibility(View.VISIBLE);
         }
     }
+
 
     private void updateOrderOnServer(String orderCode, String status) {
         new Thread(() -> {
@@ -100,4 +94,50 @@ public class PaymentResultActivity extends AppCompatActivity {
             }
         }).start();
     }
+    private void fetchOrderStatus(String orderCode) {
+        new Thread(() -> {
+            try {
+
+                URL url = new URL("https://leisureless-yasmin-inappreciatively.ngrok-free.dev/api/orders/by-code/" + orderCode);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                SessionManager sessionManager = new SessionManager(this);
+                String token = sessionManager.getToken();
+                if (token != null) {
+                    conn.setRequestProperty("Authorization", "Bearer " + token);
+                }
+
+                int responseCode = conn.getResponseCode();
+
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    StringBuilder response = new StringBuilder();
+                    String line;
+                    while ((line = in.readLine()) != null) response.append(line);
+                    in.close();
+
+                    JSONObject json = new JSONObject(response.toString());
+                    String status = json.getString("status"); // backend trả về status
+
+                    runOnUiThread(() -> {
+                        if ("processing".equals(status) || "shipped".equals(status) || "delivered".equals(status)) {
+                            tvMessage.setText("✅ Thanh toán thành công!");
+                            tvMessage.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
+                        } else {
+                            tvMessage.setText("❌ Thanh toán thất bại!");
+                            tvMessage.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
+                        }
+                    });
+                } else {
+                    runOnUiThread(() -> tvMessage.setText("❌ Không lấy được trạng thái thanh toán"));
+                }
+
+                conn.disconnect();
+            } catch (Exception e) {
+                e.printStackTrace();
+                runOnUiThread(() -> tvMessage.setText("❌ Lỗi khi kiểm tra thanh toán"));
+            }
+        }).start();
+    }
+
 }

@@ -110,7 +110,6 @@ public class ProfileSettingActivity extends AppCompatActivity {
         });
 
         btnSaveChange.setOnClickListener(v -> handleSaveProfile());
-        btnTestPayOS.setOnClickListener(v -> createPayOSOrder());
     }
 
     private void handleSaveProfile() {
@@ -178,67 +177,9 @@ public class ProfileSettingActivity extends AppCompatActivity {
         });
     }
 
-    /** Gửi request tạo đơn thanh toán PayOS lên backend */
-    private void createPayOSOrder() {
-        new Thread(() -> {
-            try {
-                URL url = new URL("https://leisureless-yasmin-inappreciatively.ngrok-free.dev/api/payment/create-order");
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("POST");
-                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-                conn.setDoOutput(true);
-
-                JSONObject json = new JSONObject();
-                json.put("amount", 10000);
-                json.put("orderId", "TEST_" + System.currentTimeMillis());
-                json.put("userId", currentUser.getId());
-
-// Thêm các trường bắt buộc để backend không báo lỗi
-                json.put("shippingAddress", "123 Main Street, Hanoi"); // test tạm
-                json.put("paymentMethod", "payos"); // hoặc "online" / "cod" tuỳ backend
-// voucherCode có thể bỏ qua
 
 
-                try (OutputStream os = conn.getOutputStream()) {
-                    os.write(json.toString().getBytes("UTF-8"));
-                }
 
-                int responseCode = conn.getResponseCode();
-                if (responseCode == HttpURLConnection.HTTP_OK) {
-                    BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                    StringBuilder response = new StringBuilder();
-                    String line;
-                    while ((line = in.readLine()) != null) response.append(line);
-                    in.close();
-
-                    JSONObject result = new JSONObject(response.toString());
-                    String checkoutUrl = result.getString("url");
-
-                    runOnUiThread(() -> openPaymentUrl(checkoutUrl));
-                } else {
-                    runOnUiThread(() ->
-                            Toast.makeText(this, "Tạo đơn PayOS thất bại", Toast.LENGTH_SHORT).show()
-                    );
-                }
-                conn.disconnect();
-            } catch (Exception e) {
-                runOnUiThread(() ->
-                        Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show()
-                );
-            }
-        }).start();
-    }
-
-    private void openPaymentUrl(String url) {
-        try {
-            // Dùng Intent.ACTION_VIEW mở link bằng browser mặc định (Chrome)
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-        } catch (ActivityNotFoundException e) {
-            Toast.makeText(this, "Không tìm thấy trình duyệt", Toast.LENGTH_SHORT).show();
-        }
-    }
 
 
 }

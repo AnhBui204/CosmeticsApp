@@ -120,7 +120,7 @@ public class ShoppingCartActivity extends AppCompatActivity {
             for (ProductModel pmItem : cartItems) {
                 subtotal += pmItem.getUnitPrice() * pmItem.getQuantity();
             }
-            double delivery = 2.00; // you may want server to provide shipping
+            double delivery = (cartItems.isEmpty()) ? 0.0 : 2.00;
             double total = subtotal + delivery;
             tvSubtotal.setText(String.format("$%.2f", subtotal));
             tvDelivery.setText(String.format("$%.2f", delivery));
@@ -176,7 +176,7 @@ public class ShoppingCartActivity extends AppCompatActivity {
         // compute and set totals for sample
         double subtotal = 0.0;
         for (ProductModel pm : cartItems) subtotal += pm.getUnitPrice() * pm.getQuantity();
-        double delivery = 2.00;
+        double delivery = (cartItems.isEmpty()) ? 0.0 : 2.00;
         double total = subtotal + delivery;
         tvSubtotal.setText(String.format("$%.2f", subtotal));
         tvDelivery.setText(String.format("$%.2f", delivery));
@@ -219,7 +219,7 @@ public class ShoppingCartActivity extends AppCompatActivity {
             if (cartItems != null) {
                 for (ProductModel pm : cartItems) subtotal += pm.getUnitPrice() * pm.getQuantity();
             }
-            double delivery = 2.00;
+            double delivery = (cartItems.isEmpty()) ? 0.0 : 2.00;
             double total = subtotal + delivery;
             tvSubtotal.setText(String.format("$%.2f", subtotal));
             tvDelivery.setText(String.format("$%.2f", delivery));
