@@ -106,59 +106,117 @@ export const updateFcmToken = asyncHandler(async (req, res) => {
 
 /**
  * @desc    Lấy danh sách yêu thích
- * @route   GET /api/users/wishlist
+ * @route   GET 
  * @access  Private
  */
+
 export const getWishlist = asyncHandler(async (req, res) => {
-    const user = await User.findById(req.user._id).populate({
+    const targetUserId = req.params.userId || req.user._id.toString();
+
+    // permission: owner or admin
+    if (req.params.userId && req.user._id.toString() !== targetUserId && req.user.role !== 'admin') {
+        res.status(403);
+        throw new Error('Không có quyền xem wishlist của người dùng khác');
+    }
+
+    const user = await User.findById(targetUserId).populate({
         path: 'wishlist',
-        model: 'Product', // Tên model Product của bạn (phải import Product model)
-        select: 'name price salePrice images ratings' // Chọn các trường cần thiết
+        model: 'Product',
+        select: 'name price salePrice images ratings'
     });
 
     if (!user) {
         res.status(404);
         throw new Error('Không tìm thấy người dùng');
     }
-    
-    res.json(user.wishlist);
+
+    res.json(user.wishlist || []);
 });
 
+
 /**
- * @desc    Thêm/Xóa sản phẩm khỏi wishlist
- * @route   POST /api/users/wishlist
+ * @desc    Thêm sản phẩm vào danh sách yêu thích
+ * @route   POST 
  * @access  Private
  */
-export const toggleWishlist = asyncHandler(async (req, res) => {
+export const addToWishlist = asyncHandler(async (req, res) => {
     const { productId } = req.body;
+    const targetUserId = req.params.userId || req.user._id.toString();
 
     if (!productId) {
         res.status(400);
-        throw new Error('Không có productId');
+        throw new Error('Thiếu productId');
     }
-    
-    // (Nên) Kiểm tra xem sản phẩm có tồn tại không
+
+    // permission
+    if (req.params.userId && req.user._id.toString() !== targetUserId && req.user.role !== 'admin') {
+        res.status(403);
+        throw new Error('Không có quyền thao tác wishlist của người dùng khác');
+    }
+
+    // validate product exists
     const product = await Product.findById(productId);
     if (!product) {
-         res.status(404);
-         throw new Error('Không tìm thấy sản phẩm');
+        res.status(404);
+        throw new Error('Không tìm thấy sản phẩm');
     }
 
-    const user = await User.findById(req.user._id);
-    // Tìm vị trí của productId trong mảng wishlist
-    const index = user.wishlist.indexOf(productId);
-
-    let isAdded;
-    if (index > -1) {
-        // Đã có -> Xóa đi
-        user.wishlist.splice(index, 1);
-        isAdded = false;
-    } else {
-        // Chưa có -> Thêm vào
-        user.wishlist.push(productId);
-        isAdded = true;
+    const user = await User.findById(targetUserId);
+    if (!user) {
+        res.status(404);
+        throw new Error('Không tìm thấy người dùng');
     }
 
+    // avoid duplicates
+    if (user.wishlist && user.wishlist.find(id => id.toString() === productId)) {
+        return res.status(200).json({ success: true, message: 'Sản phẩm đã có trong wishlist' });
+    }
+
+    user.wishlist.push(productId);
     await user.save();
-    res.status(200).json({ success: true, isAdded: isAdded });
+
+    // return populated wishlist
+    await user.populate({ path: 'wishlist', select: 'name price salePrice images ratings' });
+    res.status(201).json(user.wishlist);
 });
+
+
+/**
+ * @desc    Xóa sản phẩm khỏi danh sách yêu thích
+ * @route   DELETE 
+ * @access  Private
+ */
+export const removeFromWishlist = asyncHandler(async (req, res) => {
+    const productId = req.params.productId || req.body.productId;
+    const targetUserId = req.params.userId || req.user._id.toString();
+
+    if (!productId) {
+        res.status(400);
+        throw new Error('Thiếu productId');
+    }
+
+    // permission
+    if (req.params.userId && req.user._id.toString() !== targetUserId && req.user.role !== 'admin') {
+        res.status(403);
+        throw new Error('Không có quyền thao tác wishlist của người dùng khác');
+    }
+
+    const user = await User.findById(targetUserId);
+    if (!user) {
+        res.status(404);
+        throw new Error('Không tìm thấy người dùng');
+    }
+
+    const idx = user.wishlist.findIndex(id => id.toString() === productId);
+    if (idx === -1) {
+        res.status(404);
+        throw new Error('Sản phẩm không có trong wishlist');
+    }
+
+    user.wishlist.splice(idx, 1);
+    await user.save();
+
+    await user.populate({ path: 'wishlist', select: 'name price salePrice images ratings' });
+    res.json(user.wishlist);
+});
+

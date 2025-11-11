@@ -4,7 +4,9 @@ import {
     updateMyProfile,
     updateFcmToken,
     getWishlist,
-    toggleWishlist,changePassword
+    addToWishlist,
+    removeFromWishlist,
+    changePassword
 } from '../controllers/userController.js';
 import { isAuthenticated } from '../middleware/authmiddleware.js';
 
@@ -22,10 +24,17 @@ router.put('/change-password', changePassword);
 // POST /api/users/fcm-token
 router.post('/fcm-token', updateFcmToken);
 
-// GET /api/users/wishlist
+// Wishlist for current user
 router.get('/wishlist', getWishlist);
+router.post('/wishlist', addToWishlist);
+router.delete('/wishlist/:productId', removeFromWishlist);
 
-// POST /api/users/wishlist
-router.post('/wishlist', toggleWishlist);
+// Seller wishlist routes
+router.get('/:userId/wishlist', getWishlist);
+router.post('/:userId/wishlist', addToWishlist);
+router.delete('/:userId/wishlist/:productId', removeFromWishlist);
+
+
+
 
 export default router;

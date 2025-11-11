@@ -40,6 +40,16 @@ public interface ApiService {
             @Query("sort") String sort
     );
 
+    // Wishlist endpoints: using /api/users/{userId}/wishlist
+    @GET("api/users/{userId}/wishlist")
+    Call<List<com.example.fe.models.Product>> getWishlist(@Path("userId") String userId);
+
+    @POST("api/users/{userId}/wishlist")
+    Call<List<com.example.fe.models.Product>> addToWishlist(@Path("userId") String userId, @Body com.example.fe.network.AddToWishlistRequest body);
+
+    @DELETE("api/users/{userId}/wishlist/{productId}")
+    Call<List<com.example.fe.models.Product>> removeFromWishlist(@Path("userId") String userId, @Path("productId") String productId);
+
     // Add to cart for a specific user: POST /api/cart/{userId}/items
     @POST("api/cart/{userId}/items")
     Call<com.example.fe.models.Cart> addItemToCart(@Path("userId") String userId, @Body com.example.fe.network.AddItemRequest request);

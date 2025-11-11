@@ -92,6 +92,30 @@ public class ProductListActivity extends AppCompatActivity {
                         String imageUrl = (p.getImages() != null && !p.getImages().isEmpty())
                                 ? p.getImages().get(0)
                                 : null;
+                        // If backend returns base64 data URI (very large), avoid storing it directly in model
+                        if (imageUrl != null) {
+                            if (imageUrl.startsWith("data:")) {
+                                // data URI (base64). Glide supports it, but very large strings will cause
+                                // memory / Binder issues if we keep many of them. Allow small ones only.
+                                final int MAX_DATA_URI_LENGTH = 1024 * 1024; // 1 MB - allow larger base64 images to display
+                                if (imageUrl.length() <= MAX_DATA_URI_LENGTH) {
+                                    android.util.Log.i("ProductList", "Using small data URI for product " + p.getId());
+                                    // keep imageUrl as is so adapter/Glide can load it
+                                } else {
+                                    android.util.Log.w("ProductList", "Skipping large data URI image for product " + p.getId() + " (size=" + imageUrl.length() + ")");
+                                    imageUrl = null;
+                                }
+                            } else if (imageUrl.startsWith("/")) {
+                                // relative path from server, prefix base url
+                                imageUrl = ApiClient.getBaseUrl() + imageUrl.substring(1);
+                            } else if (!(imageUrl.startsWith("http://") || imageUrl.startsWith("https://"))) {
+                                // maybe missing scheme, prepend base URL
+                                imageUrl = ApiClient.getBaseUrl() + imageUrl;
+                            }
+                        }
+
+                        // debug: log final imageUrl so we can see what will be loaded
+                        android.util.Log.d("ProductList", "product=" + p.getId() + " finalImageUrl=" + (imageUrl != null ? imageUrl : "<null>"));
 
                         currentList.add(new ProductModel(
                                 p.getName(),
