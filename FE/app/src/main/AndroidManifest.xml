@@ -60,6 +60,7 @@
                     android:scheme="myapp" />
             </intent-filter>
         </activity>
+        <activity android:name=".ui.cart.CustomerCheckoutActivity"/>
 
     </application>
 
