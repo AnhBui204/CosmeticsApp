@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.fe.ui.home.HomeActivity;
 import com.example.fe.utils.SessionManager;
 
 import org.json.JSONObject;
@@ -33,7 +34,13 @@ public class PaymentResultActivity extends AppCompatActivity {
         tvMessage = findViewById(R.id.tvPaymentMessage);
         btnDone = findViewById(R.id.btnPaymentDone);
 
-        btnDone.setOnClickListener(v -> finish()); // quay về màn hình trước
+        btnDone.setOnClickListener(v -> {
+            Intent intent = new Intent(PaymentResultActivity.this, HomeActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            finish();
+        });
+
 
         handleIntent(getIntent());
     }
