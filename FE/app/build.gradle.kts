@@ -38,6 +38,11 @@ dependencies {
 
     implementation("com.google.android.material:material:1.10.0")
     implementation("androidx.viewpager2:viewpager2:1.0.0")
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.3")
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
+    implementation("androidx.browser:browser:1.7.0")
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)

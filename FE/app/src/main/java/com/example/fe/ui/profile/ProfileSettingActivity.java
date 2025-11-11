@@ -1,101 +1,244 @@
 package com.example.fe.ui.profile;
 
-import android.app.AlertDialog;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.Toast;
-
+import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.lifecycle.ViewModelProvider;
 import com.example.fe.R;
+import com.example.fe.data.UserData;
+import com.example.fe.utils.SessionManager;
+import org.json.JSONObject;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Collections;
 
 public class ProfileSettingActivity extends AppCompatActivity {
 
     private ImageView ivBack, imgAvatar, ivCamera;
-    private EditText etFirstName, etLastName, etEmail, etGender, etPhone;
-    private Button btnSaveChange;
+    private EditText etFullName, etEmail, etPhone, etOldPassword, etNewPassword;
+    private LinearLayout layoutChangePassword;
+    private Button btnSaveChange, btnShowChangePassword, btnTestPayOS;
+    private SessionManager sessionManager;
+    private UserData currentUser;
+    private ProfileViewModel viewModel;
+    private EditText etStreet, etWard, etDistrict, etCity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.customer_profile_setting);
 
-        // Khởi tạo views
+        sessionManager = new SessionManager(this);
+        currentUser = sessionManager.getUser();
+        viewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
+
+        initViews();
+        bindUserData();
+        observeViewModel();
+        setupListeners();
+    }
+
+    private void initViews() {
         ivBack = findViewById(R.id.ivBack);
         imgAvatar = findViewById(R.id.imgAvatar);
         ivCamera = findViewById(R.id.ivCamera);
-        etFirstName = findViewById(R.id.etFirstName);
-        etLastName = findViewById(R.id.etLastName);
+        etFullName = findViewById(R.id.etFullName);
         etEmail = findViewById(R.id.etEmail);
-        etGender = findViewById(R.id.etGender);
         etPhone = findViewById(R.id.etPhone);
+        etOldPassword = findViewById(R.id.etOldPassword);
+        etNewPassword = findViewById(R.id.etNewPassword);
+        layoutChangePassword = findViewById(R.id.layoutChangePassword);
         btnSaveChange = findViewById(R.id.btnSaveChange);
+        btnShowChangePassword = findViewById(R.id.btnShowChangePassword);
+        btnTestPayOS = findViewById(R.id.btnTestPayOS);
+        etStreet = findViewById(R.id.etStreet);
+        etWard = findViewById(R.id.etWard);
+        etDistrict = findViewById(R.id.etDistrict);
+        etCity = findViewById(R.id.etCity);
 
-        // Xử lý nút Back → chỉ cần finish()
+        layoutChangePassword.setVisibility(View.GONE);
+
+        if ("google".equals(currentUser.getLoginProvider())) {
+            btnShowChangePassword.setVisibility(View.GONE);
+            layoutChangePassword.setVisibility(View.GONE);
+        }
+    }
+
+    private void bindUserData() {
+        if (currentUser != null) {
+            etFullName.setText(currentUser.getFullName());
+            etEmail.setText(currentUser.getEmail());
+            etPhone.setText(currentUser.getPhoneNumber() != null ? currentUser.getPhoneNumber() : "");
+            if (currentUser.getAddresses() != null && !currentUser.getAddresses().isEmpty()) {
+                for (UserData.Address addr : currentUser.getAddresses()) {
+                    if (addr.isDefault()) {
+                        etStreet.setText(addr.getStreet() != null ? addr.getStreet() : "");
+                        etWard.setText(addr.getWard() != null ? addr.getWard() : "");
+                        etDistrict.setText(addr.getDistrict() != null ? addr.getDistrict() : "");
+                        etCity.setText(addr.getCity() != null ? addr.getCity() : "");
+                        break;
+                    }
+                }
+            }
+
+        }
+    }
+
+    private void setupListeners() {
         ivBack.setOnClickListener(v -> finish());
 
-        // Xử lý click vào camera icon để đổi ảnh đại diện
         ivCamera.setOnClickListener(v ->
-                Toast.makeText(ProfileSettingActivity.this, "Change profile picture", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Change profile picture", Toast.LENGTH_SHORT).show()
         );
 
-        // Xử lý click vào Gender để chọn giới tính
-        etGender.setOnClickListener(v -> showGenderDialog());
+        btnShowChangePassword.setOnClickListener(v -> {
+            if (layoutChangePassword.getVisibility() == View.GONE) {
+                layoutChangePassword.setVisibility(View.VISIBLE);
+                btnShowChangePassword.setText("Cancel Change Password");
+            } else {
+                layoutChangePassword.setVisibility(View.GONE);
+                btnShowChangePassword.setText("Change Password");
+                etOldPassword.setText("");
+                etNewPassword.setText("");
+            }
+        });
 
-        // Xử lý nút Save Change
-        btnSaveChange.setOnClickListener(v -> saveProfileChanges());
+        btnSaveChange.setOnClickListener(v -> handleSaveProfile());
+        btnTestPayOS.setOnClickListener(v -> createPayOSOrder());
     }
 
-    // Hiển thị dialog chọn giới tính
-    private void showGenderDialog() {
-        String[] genders = {"Male", "Female", "Other"};
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Select Gender")
-                .setItems(genders, (dialog, which) -> etGender.setText(genders[which]))
-                .show();
-    }
-
-    // Lưu thay đổi thông tin profile
-    private void saveProfileChanges() {
-        String firstName = etFirstName.getText().toString().trim();
-        String lastName = etLastName.getText().toString().trim();
-        String email = etEmail.getText().toString().trim();
-        String gender = etGender.getText().toString().trim();
+    private void handleSaveProfile() {
+        String fullName = etFullName.getText().toString().trim();
         String phone = etPhone.getText().toString().trim();
 
-        if (firstName.isEmpty()) {
-            etFirstName.setError("First name is required");
-            etFirstName.requestFocus();
-            return;
-        }
+        if (!validateInputs(fullName, phone)) return;
 
-        if (lastName.isEmpty()) {
-            etLastName.setError("Last name is required");
-            etLastName.requestFocus();
-            return;
-        }
+        // Update Address
+        UserData.Address address = new UserData.Address();
+        address.setStreet(etStreet.getText().toString().trim());
+        address.setWard(etWard.getText().toString().trim());
+        address.setDistrict(etDistrict.getText().toString().trim());
+        address.setCity(etCity.getText().toString().trim());
+        address.setDefault(true);
 
-        if (email.isEmpty()) {
-            etEmail.setError("Email is required");
-            etEmail.requestFocus();
-            return;
-        }
+        currentUser.setAddresses(Collections.singletonList(address));
 
-        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            etEmail.setError("Please enter a valid email");
-            etEmail.requestFocus();
-            return;
-        }
+        if (layoutChangePassword.getVisibility() == View.VISIBLE) {
+            String oldPassword = etOldPassword.getText().toString().trim();
+            String newPassword = etNewPassword.getText().toString().trim();
 
+            if (oldPassword.isEmpty() || newPassword.isEmpty()) {
+                Toast.makeText(this, "Vui lòng nhập đầy đủ mật khẩu", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            viewModel.changePassword(oldPassword, newPassword, result -> {
+                if (!result) {
+                    Toast.makeText(this, "Đổi mật khẩu thất bại", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                viewModel.updateProfile(fullName, phone, currentUser.getAddresses());
+            });
+        } else {
+            viewModel.updateProfile(fullName, phone, currentUser.getAddresses());
+        }
+    }
+
+
+    private boolean validateInputs(String fullName, String phone) {
+        if (fullName.isEmpty()) {
+            etFullName.setError("Full name is required");
+            etFullName.requestFocus();
+            return false;
+        }
         if (phone.isEmpty()) {
             etPhone.setError("Phone is required");
             etPhone.requestFocus();
-            return;
+            return false;
         }
-
-        Toast.makeText(this, "Profile updated successfully!", Toast.LENGTH_SHORT).show();
+        return true;
     }
+
+    private void observeViewModel() {
+        viewModel.getUpdateResponse().observe(this, user -> {
+            if (user != null) {
+                user.setLoginProvider(currentUser.getLoginProvider());
+                sessionManager.saveUser(user);
+                Toast.makeText(this, "Cập nhật thành công!", Toast.LENGTH_SHORT).show();
+                finish();
+            } else {
+                Toast.makeText(this, "Cập nhật thất bại!", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    /** Gửi request tạo đơn thanh toán PayOS lên backend */
+    private void createPayOSOrder() {
+        new Thread(() -> {
+            try {
+                URL url = new URL("https://leisureless-yasmin-inappreciatively.ngrok-free.dev/api/payment/create-order");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                conn.setDoOutput(true);
+
+                JSONObject json = new JSONObject();
+                json.put("amount", 10000);
+                json.put("orderId", "TEST_" + System.currentTimeMillis());
+                json.put("userId", currentUser.getId());
+
+// Thêm các trường bắt buộc để backend không báo lỗi
+                json.put("shippingAddress", "123 Main Street, Hanoi"); // test tạm
+                json.put("paymentMethod", "payos"); // hoặc "online" / "cod" tuỳ backend
+// voucherCode có thể bỏ qua
+
+
+                try (OutputStream os = conn.getOutputStream()) {
+                    os.write(json.toString().getBytes("UTF-8"));
+                }
+
+                int responseCode = conn.getResponseCode();
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    StringBuilder response = new StringBuilder();
+                    String line;
+                    while ((line = in.readLine()) != null) response.append(line);
+                    in.close();
+
+                    JSONObject result = new JSONObject(response.toString());
+                    String checkoutUrl = result.getString("url");
+
+                    runOnUiThread(() -> openPaymentUrl(checkoutUrl));
+                } else {
+                    runOnUiThread(() ->
+                            Toast.makeText(this, "Tạo đơn PayOS thất bại", Toast.LENGTH_SHORT).show()
+                    );
+                }
+                conn.disconnect();
+            } catch (Exception e) {
+                runOnUiThread(() ->
+                        Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                );
+            }
+        }).start();
+    }
+
+    private void openPaymentUrl(String url) {
+        try {
+            // Dùng Intent.ACTION_VIEW mở link bằng browser mặc định (Chrome)
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        } catch (ActivityNotFoundException e) {
+            Toast.makeText(this, "Không tìm thấy trình duyệt", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
 }
