@@ -13,6 +13,7 @@ public class ProductModel {
     private String sku;
     private int quantity;
     private double unitPrice;
+    private String cartItemId; // optional: id of cart item in server
 
     public void setId(String id) { this.id = id; }
     public String getId() { return id; }
@@ -49,4 +50,7 @@ public class ProductModel {
     public String getSku() { return sku; }
     public int getQuantity() { return quantity; }
     public double getUnitPrice() { return unitPrice; }
+
+    public String getCartItemId() { return cartItemId; }
+    public void setCartItemId(String cartItemId) { this.cartItemId = cartItemId; }
 }

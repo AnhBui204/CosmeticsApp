@@ -41,7 +41,20 @@ public interface ApiService {
             @Query("limit") int limit,
             @Query("sort") String sort
     );
-    @GET("api/revenue/seller-revenue") // Endpoint
+@POST("api/cart/{userId}/items")
+    Call<com.example.fe.models.Cart> addItemToCart(@Path("userId") String userId, @Body com.example.fe.network.AddItemRequest request);
+
+    // Remove item from cart for a specific user: DELETE /api/cart/{userId}/items/{itemId}
+    @DELETE("api/cart/{userId}/items/{itemId}")
+    Call<com.example.fe.models.Cart> removeItemFromCart(@Path("userId") String userId, @Path("itemId") String itemId);
+
+    // Get cart for specific user: GET /api/cart/{userId}
+    @GET("api/cart/{userId}")
+    Call<com.example.fe.models.Cart> getCartByUser(@Path("userId") String userId);
+
+}
+
+    @GET("api/revenue/seller-revenue")
     Call<List<RevenueData>> getSellerRevenue(
             @Query("sellerId") String id
     );

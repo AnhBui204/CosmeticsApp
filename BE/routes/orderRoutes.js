@@ -2,7 +2,7 @@ import express from 'express';
 import {
     checkout,
     getMyOrders,
-    getOrderDetails
+    getOrderDetails,getOrderByCode
 } from '../controllers/orderController.js';
 import { isAuthenticated } from '../middleware/authmiddleware.js';
 
@@ -17,6 +17,6 @@ router.post('/checkout', checkout);
 router.get('/', getMyOrders);
 
 // GET /api/orders/:id
+router.get('/by-code/:orderCode', getOrderByCode);
 router.get('/:id', getOrderDetails);
-
 export default router;

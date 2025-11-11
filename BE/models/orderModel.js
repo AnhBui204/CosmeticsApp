@@ -9,7 +9,8 @@ const orderSchema = new Schema({
         productId: { type: Schema.Types.ObjectId, ref: 'Product' },
         name: String,
         price: Number,
-        quantity: Number
+        quantity: Number,
+     sellerId: { type: Schema.Types.ObjectId, ref: 'User' }
     }],
     totalAmount: { type: Number, required: true },
     shippingAddress: { type: Object, required: true },
