@@ -10,6 +10,8 @@ const productSchema = new Schema({
     stockQuantity: { type: Number, required: true, default: 0 },
     images: [{ type: String }],
     category: { type: Schema.Types.ObjectId, ref: 'Category', required: true },
+    // track which seller (user) created this product
+    sellerId: { type: Schema.Types.ObjectId, ref: 'User', index: true },
     brand: { type: String, index: true },
     attributes: {
         volume: String,

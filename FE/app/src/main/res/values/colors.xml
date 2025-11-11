@@ -12,6 +12,9 @@
     <color name="pink_100">#FFD4DD</color>
     <color name="pink">#F46A6A</color>
 
+    <!-- Seller brand pink used across seller screens -->
+    <color name="seller_pink">#F7A5A5</color>
+
     <color name="gray_300">#E0E0E0</color>
     <color name="gray_700">#616161</color>
 

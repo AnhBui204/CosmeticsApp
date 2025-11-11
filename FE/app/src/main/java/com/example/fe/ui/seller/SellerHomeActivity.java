@@ -43,8 +43,9 @@ public class SellerHomeActivity extends AppCompatActivity {
                 setHeaderMode(true);
                  return true;
              } else if (id == R.id.navigation_seller_products) {
-//                 replaceFragment(new PlaceholderSellerFragment("Products"));
-//                setHeaderMode(false);
+                // open product list activity
+                startActivity(new android.content.Intent(SellerHomeActivity.this, SellerProductListActivity.class));
+                setHeaderMode(false);
                  return true;
              } else if (id == R.id.navigation_seller_account) {
 //                 replaceFragment(new PlaceholderSellerFragment("Account"));

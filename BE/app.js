@@ -7,6 +7,7 @@ import mongoose from 'mongoose';
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import productRoutes from './routes/productRoutes.js';
+import categoryRoutes from './routes/categoryRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
@@ -23,13 +24,16 @@ const app = express();
 
 // --- Sử dụng các Middleware cơ bản ---
 app.use(cors()); // Cho phép cross-origin
-app.use(express.json()); // Parse JSON body
+// increase payload limit to allow large base64 image payloads from mobile client
+app.use(express.json({ limit: '20mb' })); // Parse JSON body (increase limit)
+app.use(express.urlencoded({ extended: true, limit: '20mb' })); // support URL-encoded bodies as well
 
 // --- Gắn (MOUNT) CÁC ROUTES ---
 // Đây chính là phần bạn yêu cầu
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/categories', categoryRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/reviews', reviewRoutes);
