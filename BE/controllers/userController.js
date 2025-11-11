@@ -1,7 +1,7 @@
 import asyncHandler from 'express-async-handler';
 import { User } from '../models/userModel.js';
 import { Product } from '../models/productModel.js'; // Cần model Product để populate wishlist
-
+import bcrypt from 'bcryptjs';
 /**
  * @desc    Lấy thông tin profile
  * @route   GET /api/users/me
@@ -32,9 +32,10 @@ export const updateMyProfile = asyncHandler(async (req, res) => {
 
         // Logic để thêm địa chỉ mới (nếu có)
         // Body gửi lên có thể chứa: { "newAddress": { "street": "...", "city": "..." } }
-        if (req.body.newAddress) {
-            user.addresses.push(req.body.newAddress);
+       if (req.body.addresses && Array.isArray(req.body.addresses)) {
+            user.addresses = req.body.addresses;
         }
+
         // (Bạn có thể mở rộng logic để sửa/xóa địa chỉ)
 
         const updatedUser = await user.save();
@@ -52,6 +53,41 @@ export const updateMyProfile = asyncHandler(async (req, res) => {
         res.status(404);
         throw new Error('Không tìm thấy người dùng');
     }
+});
+// CHANGE PASSWORD
+/**
+ * @desc    Đổi mật khẩu người dùng
+ * @route   PUT /api/users/change-password
+ * @access  Private
+ */
+export const changePassword = asyncHandler(async (req, res) => {
+    const { oldPassword, newPassword } = req.body;
+
+    if (!oldPassword || !newPassword) {
+        res.status(400);
+        throw new Error('Vui lòng cung cấp đầy đủ thông tin');
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+        res.status(404);
+        throw new Error('Người dùng không tồn tại');
+    }
+
+    // Kiểm tra mật khẩu cũ
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+        res.status(401);
+        throw new Error('Mật khẩu cũ không đúng');
+    }
+
+    // Mã hóa mật khẩu mới
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+
+    await user.save();
+
+    res.status(200).json({ message: 'Đổi mật khẩu thành công' });
 });
 
 /**

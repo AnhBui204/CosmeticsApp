@@ -52,6 +52,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
             i.putExtra("categoryId", selected.getCategoryID());
             v.getContext().startActivity(i);
         });
+
     }
 
     @Override

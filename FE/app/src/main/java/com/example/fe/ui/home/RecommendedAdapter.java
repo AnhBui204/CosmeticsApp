@@ -10,6 +10,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.fe.R;
 import com.example.fe.ui.category.Category;
 import com.example.fe.ui.category.ProductDetailActivity; // ⬅️ nhớ import
@@ -38,7 +39,18 @@ public class RecommendedAdapter extends RecyclerView.Adapter<RecommendedAdapter.
 
         holder.tvName.setText(item.getName());
         holder.tvPrice.setText("Unit " + item.getPrice());
-        holder.imgProduct.setImageResource(item.getImage());
+
+        // Load image: prefer imageUrl, fallback to imageRes
+        String imageUrl = item.getImageUrl();
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            Glide.with(holder.itemView.getContext())
+                    .load(imageUrl)
+                    .placeholder(R.drawable.ic_image_placeholder)
+                    .error(R.drawable.ic_image_placeholder)
+                    .into(holder.imgProduct);
+        } else {
+            holder.imgProduct.setImageResource(item.getImageRes());
+        }
 
         Category category = item.getCategory();
         holder.tvCategory.setText(category != null ? category.getName() : "Unknown Category");
@@ -46,11 +58,24 @@ public class RecommendedAdapter extends RecyclerView.Adapter<RecommendedAdapter.
         // ➜ Click mở màn chi tiết
         holder.itemView.setOnClickListener(v -> {
             Intent i = new Intent(v.getContext(), ProductDetailActivity.class);
-            i.putExtra("name", item.getName());
-            i.putExtra("price", item.getPrice());
-            i.putExtra("imageResId", item.getImage());
-            i.putExtra("categoryName", category != null ? category.getName() : "");
-            v.getContext().startActivity(i);
+            // only send productId to keep Intent small; ProductDetailActivity will fetch full details from API
+            i.putExtra("productId", item.getId());
+            i.putExtra("imageResId", item.getImageRes());
+            try {
+                v.getContext().startActivity(i);
+            } catch (RuntimeException ex) {
+                // TransactionTooLargeException or other runtime failure when sending too much data via Intent.
+                android.util.Log.e("RecommendedAdapter", "Failed to start ProductDetailActivity with full extras, retrying with compact intent", ex);
+                try {
+                    Intent compact = new Intent(v.getContext(), ProductDetailActivity.class);
+                    compact.putExtra("name", item.getName());
+                    compact.putExtra("price", item.getPrice());
+                    compact.putExtra("imageResId", item.getImageRes());
+                    v.getContext().startActivity(compact);
+                } catch (Exception ex2) {
+                    android.util.Log.e("RecommendedAdapter", "Fallback startActivity also failed", ex2);
+                }
+            }
         });
     }
 

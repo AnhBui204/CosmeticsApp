@@ -14,9 +14,10 @@ const userSchema = new Schema({
         ward: String,
         isDefault: { type: Boolean, default: false }
     }],
-    role: { type: String, enum: ['customer', 'admin'], default: 'customer' },
+    role: { type: String, enum: ['customer', 'admin','seller'], default: 'customer' },
     wishlist: [{ type: Schema.Types.ObjectId, ref: 'Product' }], // Tính năng: Wishlist
     fcmToken: { type: String }, // Tính năng: Notification
+     loginProvider: { type: String, enum: ['email', 'google'], default: 'email' },
     createdAt: { type: Date, default: Date.now }
 });
 export const User = mongoose.model('User', userSchema);

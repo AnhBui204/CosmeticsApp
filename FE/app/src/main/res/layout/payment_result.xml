@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layoutPaymentResult"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="24dp"
+    android:background="@android:color/white">
+
+    <ImageView
+        android:id="@+id/imgPaymentStatus"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:contentDescription="Payment Status"
+        android:src="@android:drawable/ic_dialog_info" /> <!-- icon hệ thống tạm -->
+
+    <TextView
+        android:id="@+id/tvPaymentMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Đang xử lý thanh toán..."
+        android:textSize="18sp"
+        android:textColor="@android:color/black"
+        android:layout_marginTop="24dp"
+        android:textStyle="bold" />
+
+    <Button
+        android:id="@+id/btnPaymentDone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Quay về trang chính"
+        android:layout_marginTop="32dp"
+        android:padding="12dp"
+        android:backgroundTint="@android:color/holo_green_dark"
+    android:textColor="@android:color/white"
+    android:visibility="gone" />
+
+</LinearLayout>

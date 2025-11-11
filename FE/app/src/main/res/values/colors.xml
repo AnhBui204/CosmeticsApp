@@ -12,6 +12,9 @@
     <color name="pink_100">#FFD4DD</color>
     <color name="pink">#F46A6A</color>
 
+    <!-- Seller brand pink used across seller screens -->
+    <color name="seller_pink">#F7A5A5</color>
+
     <color name="gray_300">#E0E0E0</color>
     <color name="gray_700">#616161</color>
 
@@ -22,6 +25,7 @@
     <color name="red_500">#F44336</color>   <!-- Màu đỏ cho status Cancelled -->
     <color name="gray_400">#BDBDBD</color> <!-- Viền nút Details -->
     <color name="gray_500">#9E9E9E</color> <!-- Màu chữ ngày tháng -->
+    <color name="gray_900">#212121</color>
 
     <color name="black_01">#3E4554</color>
     <color name="black_02">#616A7D</color>

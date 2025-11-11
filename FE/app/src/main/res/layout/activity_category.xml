@@ -11,7 +11,6 @@
         android:layout_height="150dp"
         android:background="#F7A5A5"
         android:padding="24dp"
-        android:clipToOutline="true"
         android:layout_alignParentTop="true">
 
         <!-- Top bar: Greeting + Cart -->
@@ -97,7 +96,7 @@
             android:layout_height="wrap_content"
             android:paddingBottom="90dp">
 
-            <!-- Horizontal Category Selector -->
+            <!-- Horizontal Category Selector (restored to original static buttons) -->
             <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

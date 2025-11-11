@@ -3,6 +3,9 @@ import {
     getAllProducts,
     getProductById,
     getRelatedProducts,
+    createProduct,
+    updateProduct,
+    deleteProduct
 } from '../controllers/productController.js';
 import { getReviewsForProduct } from '../controllers/reviewController.js';
 
@@ -19,5 +22,14 @@ router.get('/:id/related', getRelatedProducts);
 
 // GET /api/products/:id/reviews
 router.get('/:id/reviews', getReviewsForProduct);
+
+// POST /api/products/
+router.post('/', createProduct);
+
+// PUT /api/products/:id
+router.put('/:id', updateProduct);
+
+// DELETE /api/products/:id
+router.delete('/:id', deleteProduct);
 
 export default router;

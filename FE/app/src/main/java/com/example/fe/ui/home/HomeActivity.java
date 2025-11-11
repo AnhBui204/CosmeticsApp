@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -18,6 +19,7 @@ import com.example.fe.ui.category.Category;
 import com.example.fe.ui.category.CategoryActivity;
 import com.example.fe.ui.favorite.FavoriteActivity;
 import com.example.fe.ui.profile.ProfileActivity;
+import com.example.fe.utils.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
@@ -36,7 +38,14 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-
+        SessionManager sessionManager = new SessionManager(this);
+        TextView tvGreeting = findViewById(R.id.tvGreeting);
+        String name = sessionManager.getName();
+        if (name != null && !name.isEmpty()) {
+            tvGreeting.setText("Hey, " + name);
+        } else {
+            tvGreeting.setText("Hey, Guest");
+        }
         ImageView imgCart = findViewById(R.id.imgCart);
         imgCart.setOnClickListener(v -> {
             Intent intent = new Intent(HomeActivity.this, com.example.fe.ui.cart.ShoppingCartActivity.class);
@@ -93,10 +102,11 @@ public class HomeActivity extends AppCompatActivity {
 
     private List<ProductModel> buildRecommended() {
         List<ProductModel> list = new ArrayList<>();
-        list.add(new ProductModel("Son Môi Đỏ", "$15", R.drawable.img_lipstick_red, getCategoryById("C02")));
-        list.add(new ProductModel("Kem Dưỡng Ẩm", "$20", R.drawable.img_moisturizer, getCategoryById("C01")));
-        list.add(new ProductModel("Sữa Rửa Mặt", "$10", R.drawable.img_facewash, getCategoryById("C01")));
-        list.add(new ProductModel("Mặt Nạ Dưỡng Da", "$12", R.drawable.img_face_mask, getCategoryById("C03")));
+        // use new constructor: (name, price, imageUrl, imageRes, category)
+        list.add(new ProductModel("Son Môi Đỏ", "$15", null, R.drawable.img_lipstick_red, getCategoryById("C02")));
+        list.add(new ProductModel("Kem Dưỡng Ẩm", "$20", null, R.drawable.img_moisturizer, getCategoryById("C01")));
+        list.add(new ProductModel("Sữa Rửa Mặt", "$10", null, R.drawable.img_facewash, getCategoryById("C01")));
+        list.add(new ProductModel("Mặt Nạ Dưỡng Da", "$12", null, R.drawable.img_face_mask, getCategoryById("C03")));
         return list;
     }
 
