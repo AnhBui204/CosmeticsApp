@@ -6,11 +6,14 @@ import mongoose from 'mongoose';
 // --- Import tất cả các file routes ---
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import revenueRoutes from './routes/revenueRoutes.js';
 import productRoutes from './routes/productRoutes.js';
+import categoryRoutes from './routes/categoryRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
 import voucherRoutes from './routes/voucherRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
 // import adminRoutes from './routes/adminRoutes.js';
 
 // --- Middleware xử lý lỗi (nên đặt ở file riêng) ---
@@ -23,19 +26,23 @@ const app = express();
 
 // --- Sử dụng các Middleware cơ bản ---
 app.use(cors()); // Cho phép cross-origin
-app.use(express.json()); // Parse JSON body
+// increase payload limit to allow large base64 image payloads from mobile client
+app.use(express.json({ limit: '20mb' })); // Parse JSON body (increase limit)
+app.use(express.urlencoded({ extended: true, limit: '20mb' })); // support URL-encoded bodies as well
 
 // --- Gắn (MOUNT) CÁC ROUTES ---
 // Đây chính là phần bạn yêu cầu
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/revenue', revenueRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/categories', categoryRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/vouchers', voucherRoutes);
 // app.use('/api/admin', adminRoutes);
-
+app.use('/api/payment', paymentRoutes);
 // --- Route test ---
 app.get('/', (req, res) => {
     res.send('API cho App Mỹ phẩm đang chạy...');

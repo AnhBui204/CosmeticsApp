@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="24dp">
+
+        <!-- Title -->
+        <TextView
+            android:id="@+id/tvCreate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Create"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="40dp"/>
+
+        <TextView
+            android:id="@+id/tvYourAccount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="your account"
+            android:textSize="22sp"
+            android:layout_marginTop="4dp"
+            app:layout_constraintTop_toBottomOf="@id/tvCreate"
+            app:layout_constraintStart_toStartOf="@id/tvCreate"/>
+
+        <!-- Basic info -->
+        <EditText
+            android:id="@+id/etName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="Enter your name"
+            android:backgroundTint="@android:color/darker_gray"
+            android:inputType="textPersonName"
+            app:layout_constraintTop_toBottomOf="@id/tvYourAccount"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="20dp"/>
+
+        <EditText
+            android:id="@+id/etEmail"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="Email address"
+            android:backgroundTint="@android:color/darker_gray"
+            android:inputType="textEmailAddress"
+            app:layout_constraintTop_toBottomOf="@id/etName"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="16dp"/>
+
+        <EditText
+            android:id="@+id/etPhone"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="Phone Number"
+            android:backgroundTint="@android:color/darker_gray"
+            android:inputType="phone"
+            app:layout_constraintTop_toBottomOf="@id/etEmail"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="16dp"/>
+
+        <!-- Address fields -->
+        <EditText
+            android:id="@+id/etStreet"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="Street"
+            android:backgroundTint="@android:color/darker_gray"
+            android:inputType="textPostalAddress"
+            app:layout_constraintTop_toBottomOf="@id/etPhone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="20dp"/>
+
+        <EditText
+            android:id="@+id/etCity"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="City"
+            android:backgroundTint="@android:color/darker_gray"
+            android:inputType="textPostalAddress"
+            app:layout_constraintTop_toBottomOf="@id/etStreet"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="12dp"/>
+
+        <EditText
+            android:id="@+id/etDistrict"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="District"
+            android:backgroundTint="@android:color/darker_gray"
+            android:inputType="textPostalAddress"
+            app:layout_constraintTop_toBottomOf="@id/etCity"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="12dp"/>
+
+        <EditText
+            android:id="@+id/etWard"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="Ward"
+            android:backgroundTint="@android:color/darker_gray"
+            android:inputType="textPostalAddress"
+            app:layout_constraintTop_toBottomOf="@id/etDistrict"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="12dp"/>
+
+        <!-- Password fields -->
+        <EditText
+            android:id="@+id/etPassword"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="Password"
+            android:backgroundTint="@android:color/darker_gray"
+            android:inputType="textPassword"
+            app:layout_constraintTop_toBottomOf="@id/etWard"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="20dp"/>
+
+        <EditText
+            android:id="@+id/etConfirmPassword"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="Confirm password"
+            android:backgroundTint="@android:color/darker_gray"
+            android:inputType="textPassword"
+            app:layout_constraintTop_toBottomOf="@id/etPassword"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="16dp"/>
+
+        <!-- Role selection -->
+        <TextView
+            android:id="@+id/tvRoleTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="You are ?"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintTop_toBottomOf="@id/etConfirmPassword"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="20dp"/>
+
+        <RadioGroup
+            android:id="@+id/rgRole"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@id/tvRoleTitle"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="8dp">
+
+            <RadioButton
+                android:id="@+id/rbCustomer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Customer"
+                android:checked="true"/>
+
+            <RadioButton
+                android:id="@+id/rbSeller"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Shop"
+                android:layout_marginStart="20dp"/>
+        </RadioGroup>
+
+        <!-- Sign Up button -->
+        <Button
+            android:id="@+id/btnSignUp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="SIGN UP"
+            android:textColor="@android:color/white"
+            android:backgroundTint="#F7A5A5"
+            android:paddingStart="40dp"
+            android:paddingEnd="40dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            app:layout_constraintTop_toBottomOf="@id/rgRole"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="30dp"/>
+
+        <!-- "Already have account?" -->
+        <TextView
+            android:id="@+id/tvLogin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Already have account? "
+            android:textSize="13sp"
+            app:layout_constraintTop_toBottomOf="@id/btnSignUp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="20dp"/>
+
+        <TextView
+            android:id="@+id/tvLoginLink"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Log In"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:textSize="13sp"
+            app:layout_constraintTop_toTopOf="@id/tvLogin"
+            app:layout_constraintBottom_toBottomOf="@id/tvLogin"
+            app:layout_constraintStart_toEndOf="@id/tvLogin"
+            android:layout_marginStart="4dp"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

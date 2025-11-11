@@ -4,6 +4,7 @@ const { Schema } = mongoose;
 const orderSchema = new Schema({
     orderCode: { type: String, required: true, unique: true },
     userId: { type: Schema.Types.ObjectId, ref: 'User' },
+    sellerId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     items: [{
         productId: { type: Schema.Types.ObjectId, ref: 'Product' },
         name: String,
