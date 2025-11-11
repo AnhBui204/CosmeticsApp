@@ -9,7 +9,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.util.TypedValue;
-
+import com.example.fe.ui.voucher.VoucherFragment;
 import com.example.fe.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -32,27 +32,38 @@ public class SellerHomeActivity extends AppCompatActivity {
          BottomNavigationView bottomNav = findViewById(R.id.sellerBottomNav);
          bottomNav.setOnItemSelectedListener(item -> {
              int id = item.getItemId();
+
              if (id == R.id.navigation_seller_home) {
-                 // pop fragments to show default dashboard (we keep the layout's default content)
+                 // Quay lại màn hình dashboard mặc định
                  popToDashboard();
-                setHeaderExpanded(true);
+                 setHeaderExpanded(true);
                  return true;
+
              } else if (id == R.id.navigation_seller_orders) {
                  replaceFragment(new SellerOrdersFragment());
-                // for orders: show order controls in header and collapse header height
-                setHeaderMode(true);
+                 // Hiển thị header rút gọn khi ở màn orders
+                 setHeaderMode(true);
                  return true;
-             } else if (id == R.id.navigation_seller_products) {
-//                 replaceFragment(new PlaceholderSellerFragment("Products"));
-//                setHeaderMode(false);
+//
+//             } else if (id == R.id.navigation_seller_products) {
+//                 replaceFragment(new SellerProductsFragment());
+//                 setHeaderMode(false);
+//                 return true;
+
+             } else if (id == R.id.navigation_seller_vouchers) {
+                 replaceFragment(new VoucherFragment());
+                 setHeaderMode(false); // nếu bạn muốn ẩn header khi vào phần voucher
                  return true;
-             } else if (id == R.id.navigation_seller_account) {
-//                 replaceFragment(new PlaceholderSellerFragment("Account"));
-//                setHeaderMode(false);
-                 return true;
+
+//             } else if (id == R.id.navigation_seller_account) {
+//                 replaceFragment(new SellerAccountFragment());
+//                 setHeaderMode(false);
+//                 return true;
              }
+
              return false;
          });
+
      }
 
     private void setHeaderExpanded(boolean expanded) {
