@@ -8,7 +8,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.fe.LoginActivity;
+import com.example.fe.ui.auth.login.LoginActivity;
 import com.example.fe.MainActivity; // import MainActivity to route to fragment-hosting activity
 import com.example.fe.R;
 import com.example.fe.ui.category.CategoryActivity;
