@@ -2,6 +2,7 @@ package com.example.fe.ui.category;
 
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -16,6 +17,7 @@ import com.example.fe.R;
 import com.example.fe.network.ApiClient;
 import com.example.fe.network.ApiService;
 import com.example.fe.network.AddItemRequest;
+import com.example.fe.network.AddToWishlistRequest;
 import com.example.fe.models.Product;
 import com.example.fe.utils.SessionManager;
 import com.example.fe.ui.cart.CartStore;
@@ -39,6 +41,9 @@ public class ProductDetailActivity extends AppCompatActivity {
     private String activeName;
     private String activeProductId;
 
+    private ImageButton btnFav;
+    private boolean isFavorited = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,7 +56,8 @@ public class ProductDetailActivity extends AppCompatActivity {
         });
 
         ImageButton btnBack = findViewById(R.id.btnBack);
-        ImageButton btnFav  = findViewById(R.id.btnFav);
+        btnFav = findViewById(R.id.btnFav);
+
         ImageView img       = findViewById(R.id.imgProduct);
         TextView tvName     = findViewById(R.id.tvName);
         TextView tvPrice    = findViewById(R.id.tvPrice);
@@ -72,6 +78,9 @@ public class ProductDetailActivity extends AppCompatActivity {
         activeName = name;
         activeProductId = productId;
         activeUnitPrice = parsePriceString(price);
+
+        // set default heart visual
+        setFavSelected(false);
 
         if (productId != null && !productId.isEmpty()) {
             // load product detail from API
@@ -97,6 +106,9 @@ public class ProductDetailActivity extends AppCompatActivity {
                         activeImageRes = imageRes;
                         activeUnitPrice = p.getSalePrice() != null ? p.getSalePrice() : p.getPrice();
 
+                        // now check wishlist status
+                        checkFavoriteState(activeProductId);
+
                     } else {
                         // fallback to intent data
                         tvName.setText(name != null ? name : "Product");
@@ -106,6 +118,8 @@ public class ProductDetailActivity extends AppCompatActivity {
                         } else {
                             img.setImageResource(imageRes);
                         }
+                        // still check wishlist with fallback id
+                        checkFavoriteState(activeProductId);
                     }
                 }
 
@@ -119,6 +133,7 @@ public class ProductDetailActivity extends AppCompatActivity {
                     } else {
                         img.setImageResource(imageRes);
                     }
+                    checkFavoriteState(activeProductId);
                 }
             });
         } else {
@@ -130,6 +145,7 @@ public class ProductDetailActivity extends AppCompatActivity {
             } else {
                 img.setImageResource(imageRes);
             }
+            checkFavoriteState(activeProductId);
         }
 
         tvDetails.setText("Praesent commodo cursus magna, vel scelerisque nisl consectetur. " +
@@ -138,8 +154,59 @@ public class ProductDetailActivity extends AppCompatActivity {
         btnBack.setOnClickListener(v -> finish());
 
         btnFav.setOnClickListener(v -> {
-            v.setSelected(!v.isSelected());
-            Toast.makeText(this, v.isSelected() ? "Added to wishlist" : "Removed from wishlist", Toast.LENGTH_SHORT).show();
+            // toggle wishlist
+            SessionManager session = new SessionManager(ProductDetailActivity.this);
+            com.example.fe.data.UserData user = session.getUser();
+            if (user == null || user.getId() == null) {
+                Toast.makeText(ProductDetailActivity.this, "Vui lòng đăng nhập để quản lý yêu thích", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            btnFav.setEnabled(false);
+            ApiService api = ApiClient.getClient(ProductDetailActivity.this).create(ApiService.class);
+            if (!isFavorited) {
+                // add
+                AddToWishlistRequest req = new AddToWishlistRequest(activeProductId);
+                api.addToWishlist(user.getId(), req).enqueue(new Callback<List<Product>>() {
+                    @Override
+                    public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
+                        btnFav.setEnabled(true);
+                        if (response.isSuccessful()) {
+                            isFavorited = true;
+                            setFavSelected(true);
+                            Toast.makeText(ProductDetailActivity.this, "Đã thêm vào yêu thích", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(ProductDetailActivity.this, "Thêm yêu thích thất bại", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<Product>> call, Throwable t) {
+                        btnFav.setEnabled(true);
+                        Toast.makeText(ProductDetailActivity.this, "Lỗi mạng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } else {
+                // remove
+                api.removeFromWishlist(user.getId(), activeProductId).enqueue(new Callback<List<Product>>() {
+                    @Override
+                    public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
+                        btnFav.setEnabled(true);
+                        if (response.isSuccessful()) {
+                            isFavorited = false;
+                            setFavSelected(false);
+                            Toast.makeText(ProductDetailActivity.this, "Đã xóa khỏi yêu thích", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(ProductDetailActivity.this, "Xóa yêu thích thất bại", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<Product>> call, Throwable t) {
+                        btnFav.setEnabled(true);
+                        Toast.makeText(ProductDetailActivity.this, "Lỗi mạng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
         });
 
         // New: add to cart network call
@@ -208,5 +275,48 @@ public class ProductDetailActivity extends AppCompatActivity {
         } catch (Exception e) {
             return 0.0;
         }
+    }
+
+    private void checkFavoriteState(String productId) {
+        // check if the product is in the user's wishlist
+        SessionManager session = new SessionManager(this);
+        com.example.fe.data.UserData user = session.getUser();
+        if (user == null || user.getId() == null) {
+            setFavSelected(false);
+            return;
+        }
+
+        ApiService api = ApiClient.getClient(this).create(ApiService.class);
+        api.getWishlist(user.getId()).enqueue(new Callback<List<Product>>() {
+            @Override
+            public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Product> wishlist = response.body();
+                    isFavorited = false;
+                    for (Product p : wishlist) {
+                        if (p.getId() != null && p.getId().equals(productId)) {
+                            isFavorited = true;
+                            break;
+                        }
+                    }
+                    setFavSelected(isFavorited);
+                } else {
+                    setFavSelected(false);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Product>> call, Throwable t) {
+                setFavSelected(false);
+            }
+        });
+    }
+
+    private void setFavSelected(boolean isSelected) {
+        btnFav.setSelected(isSelected);
+        btnFav.setEnabled(true);
+        btnFav.setImageResource(R.drawable.ic_heart);
+        int color = isSelected ? Color.parseColor("#DD5D79") : Color.GRAY;
+        btnFav.setColorFilter(color);
     }
 }

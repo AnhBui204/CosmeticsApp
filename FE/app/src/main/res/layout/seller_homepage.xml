@@ -7,12 +7,10 @@
     android:background="@android:color/white"
     tools:context=".ui.seller.SellerHomeActivity">
 
-    <!-- HEADER (same structure as activity_home but for seller) -->
     <RelativeLayout
         android:id="@+id/headerLayout"
         android:layout_width="match_parent"
-        android:layout_height="260dp"
-        android:background="#F7A5A5"
+        android:layout_height="160dp" android:background="#F7A5A5"
         android:padding="24dp"
         android:clipToOutline="true"
         android:layout_alignParentTop="true">
@@ -35,11 +33,8 @@
                 android:textSize="24sp"
                 android:textStyle="bold"
                 android:layout_marginTop="5dp"/>
-
-
         </LinearLayout>
 
-        <!-- Header search for Home (visible on Home) - styled per your preference -->
         <EditText
             android:id="@+id/etHeaderSearch"
             android:layout_width="match_parent"
@@ -55,7 +50,6 @@
             android:textColor="@android:color/white"
             android:singleLine="true" />
 
-        <!-- Header order controls (visible only when Orders selected) -->
         <LinearLayout
             android:id="@+id/headerOrderControls"
             android:layout_width="match_parent"
@@ -88,119 +82,104 @@
                 android:background="@android:color/transparent"
                 android:contentDescription="Filter by date"
                 android:layout_marginStart="8dp" />
-
         </LinearLayout>
+
+        <RelativeLayout
+            android:id="@+id/productHeaderLayout"
+            android:visibility="gone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/seller_pink" android:padding="16dp"
+            android:gravity="center_vertical"
+            android:layout_alignParentTop="true">
+
+            <ImageButton
+                android:id="@+id/btnBack"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentStart="true"
+                android:background="@android:color/transparent"
+                android:src="@drawable/ic_arrow_back"
+                android:scaleType="centerInside"
+                app:tint="@android:color/white" />
+
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="My Products"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white" />
+
+            <ImageButton
+                android:id="@+id/btnRefresh"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentEnd="true"
+                android:background="@android:color/transparent"
+                android:src="@drawable/ic_refresh"
+                android:scaleType="centerInside"
+                app:tint="@android:color/white" />
+
+        </RelativeLayout>
 
     </RelativeLayout>
 
-    <!-- Main content placeholder for seller (orders, products, stats) -->
     <FrameLayout
         android:id="@+id/seller_fragment_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/headerLayout">
+        android:layout_below="@id/headerLayout"
+        android:layout_above="@id/sellerBottomNav"> <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingHorizontal="16dp"
+        android:clipToPadding="false"
+        android:overScrollMode="never">
 
-        <!-- Default dashboard content shown when no fragment is loaded -->
-        <ScrollView
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:paddingHorizontal="16dp"
-            android:clipToPadding="false"
-            android:overScrollMode="never">
+            android:layout_height="wrap_content"
+            android:paddingBottom="90dp"> <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Doanh thu 7 ngày"
+            android:textColor="#000000"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="12dp" />
 
-            <LinearLayout
-                android:orientation="vertical"
+            <com.github.mikephil.charting.charts.LineChart
+                android:id="@+id/lineChart"
+                android:layout_width="match_parent"
+                android:layout_height="250dp"
+                android:layout_marginBottom="24dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Top Selling Products"
+                android:textColor="#000000"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="12dp" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerView_topProducts"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingBottom="90dp">
+                android:clipToPadding="false"
+                android:overScrollMode="never" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Seller Dashboard"
-                    android:textColor="#000000"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-                    android:layout_marginTop="24dp"
-                    android:layout_marginBottom="12dp" />
-
-                <!-- Example: list of seller orders -->
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recyclerSellerOrders"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:clipToPadding="false"
-                    android:paddingBottom="20dp"
-                    android:overScrollMode="never" />
-
-                <!-- Seller stats cards -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
-                    android:orientation="horizontal"
-                    android:weightSum="2">
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:background="@drawable/bg_promo_card"
-                        android:orientation="vertical"
-                        android:padding="20dp"
-                        android:layout_marginEnd="8dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="1200 USD"
-                            android:textColor="#2D2D2D"
-                            android:textSize="28sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Total Sales"
-                            android:textColor="#7A7A7A"
-                            android:textSize="13sp"
-                            android:layout_marginTop="4dp" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:background="@drawable/bg_promo_card_2"
-                        android:orientation="vertical"
-                        android:padding="20dp"
-                        android:layout_marginStart="8dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="85"
-                            android:textColor="#2D2D2D"
-                            android:textSize="28sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Orders Today"
-                            android:textColor="#7A7A7A"
-                            android:textSize="13sp"
-                            android:layout_marginTop="4dp" />
-                    </LinearLayout>
-                </LinearLayout>
-
-            </LinearLayout>
-
-        </ScrollView>
+        </LinearLayout>
+    </ScrollView>
 
     </FrameLayout>
 
-    <!-- Seller Bottom Navigation -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/sellerBottomNav"
         android:layout_width="match_parent"

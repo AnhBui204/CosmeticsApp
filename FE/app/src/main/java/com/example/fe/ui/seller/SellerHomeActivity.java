@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -17,13 +18,17 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageButton; // << THÊM IMPORT
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.example.fe.R;
 import com.example.fe.data.RevenueData; // Model
 import com.example.fe.data.TopProductData; // Model
+import com.example.fe.ui.profile.ProfileActivity;
 import com.example.fe.ui.seller.adapter.TopProductAdapter; // Adapter
+import com.example.fe.ui.seller.fragment.SellerOrdersFragment; // << THÊM IMPORT
+import com.example.fe.ui.seller.fragment.SellerProductsFragment; // << THÊM IMPORT
 import com.example.fe.utils.SessionManager; // Import để lấy ID
 
 // --- IMPORT THÊM CHO BIỂU ĐỒ ---
@@ -50,6 +55,10 @@ public class SellerHomeActivity extends AppCompatActivity {
     private RelativeLayout headerLayout;
     private EditText etHeaderSearch;
     private View headerOrderControls;
+    // --- BIẾN MỚI TỪ FILE 2 ---
+    private View productHeaderLayout;
+    private ImageButton productBtnBack;
+    private ImageButton productBtnRefresh;
 
     // --- Biến UI Doanh thu ---
     private LineChart lineChart;
@@ -68,46 +77,79 @@ public class SellerHomeActivity extends AppCompatActivity {
         viewModel = new ViewModelProvider(this).get(SellerViewModel.class);
         sessionManager = new SessionManager(this); // Khởi tạo SessionManager
 
-        // --- Ánh xạ UI Header ---
+        // --- Ánh xạ UI Header (GỐC) ---
         headerLayout = findViewById(R.id.headerLayout);
         etHeaderSearch = findViewById(R.id.etHeaderSearch);
         headerOrderControls = findViewById(R.id.headerOrderControls);
-        setHeaderExpanded(true); // Mặc định
 
-        // --- Ánh xạ UI Doanh thu ---
+        // --- ÁNH XẠ UI MỚI (TỪ FILE 2) ---
+        productHeaderLayout = findViewById(R.id.productHeaderLayout);
+        productBtnBack = findViewById(R.id.btnBack);
+        productBtnRefresh = findViewById(R.id.btnRefresh);
+
+        // --- LOGIC NÚT MỚI (TỪ FILE 2) ---
+        // product header back: return to dashboard and hide product header
+        productBtnBack.setOnClickListener(v -> {
+            popToDashboard();
+            showProductHeader(false);
+            setHeaderExpanded(true);
+        });
+
+        // header refresh: try to find the products fragment and call its refresh
+        productBtnRefresh.setOnClickListener(v -> {
+            Fragment f = getSupportFragmentManager().findFragmentById(R.id.seller_fragment_container);
+            if (f instanceof SellerProductsFragment) {
+                ((SellerProductsFragment) f).refreshProducts();
+            }
+        });
+        // ------------------------------------
+
+        // Mặc định: expanded header with search visible
+        setHeaderExpanded(true);
+
+        // --- Ánh xạ UI Doanh thu (GỐC) ---
         lineChart = findViewById(R.id.lineChart);
         recyclerViewTopProducts = findViewById(R.id.recyclerView_topProducts);
 
-        // --- Setup Bottom Navigation ---
+        // --- Setup Bottom Navigation (ĐÃ HỢP NHẤT) ---
         BottomNavigationView bottomNav = findViewById(R.id.sellerBottomNav);
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.navigation_seller_home) {
+                // pop fragments to show default dashboard
                 popToDashboard();
                 setHeaderExpanded(true);
+                showProductHeader(false); // Ẩn header sản phẩm
                 return true;
             } else if (id == R.id.navigation_seller_orders) {
                 replaceFragment(new SellerOrdersFragment());
+                // for orders: show order controls in header and collapse header height
                 setHeaderMode(true);
+                showProductHeader(false); // Ẩn header sản phẩm
                 return true;
             } else if (id == R.id.navigation_seller_products) {
-                startActivity(new android.content.Intent(SellerHomeActivity.this, SellerProductListActivity.class));
-                setHeaderMode(false);
+                // show product list fragment
+                replaceFragment(new SellerProductsFragment());
+                // show product header and hide other header elements
+                showProductHeader(true);
                 return true;
             } else if (id == R.id.navigation_seller_account) {
-                // (Chưa làm)
+                Intent intent = new Intent(SellerHomeActivity.this, ProfileActivity.class); // <-- Thay tên Activity cho đúng
+                startActivity(intent);
+
+                showProductHeader(false); // Ẩn header sản phẩm
                 return true;
             }
             return false;
         });
 
-        // --- Logic gọi API ---
+        // --- Logic gọi API (GỐC) ---
         setupObservers(); // Bắt đầu lắng nghe
         loadDataFromApi(); // Kích hoạt gọi API
     }
 
     /**
-     * Kích hoạt gọi API
+     * Kích hoạt gọi API (GỐC)
      * Lấy sellerId từ SessionManager và truyền vào ViewModel
      */
     private void loadDataFromApi() {
@@ -125,7 +167,7 @@ public class SellerHomeActivity extends AppCompatActivity {
     }
 
     /**
-     * Lắng nghe kết quả từ ViewModel
+     * Lắng nghe kết quả từ ViewModel (GỐC)
      */
     private void setupObservers() {
         // 1. Lắng nghe dữ liệu doanh thu
@@ -156,9 +198,7 @@ public class SellerHomeActivity extends AppCompatActivity {
     }
 
     /**
-     * Hàm vẽ biểu đồ (ĐÃ CẬP NHẬT)
-     * - Hiển thị trục X (ngày), trục Y (tiền)
-     * - Hiển thị giá trị trên điểm
+     * Hàm vẽ biểu đồ (GỐC)
      */
     private void setupLineChart(List<RevenueData> data) {
         if (lineChart == null) return;
@@ -192,7 +232,7 @@ public class SellerHomeActivity extends AppCompatActivity {
         dataSet.setCircleRadius(4f);
         dataSet.setDrawCircleHole(false);
 
-        // --- SỬA --- Hiển thị giá trị trên điểm (số nguyên, không có ,00)
+        // Hiển thị giá trị trên điểm (số nguyên, không có ,00)
         dataSet.setDrawValues(true);
         dataSet.setValueTextSize(10f);
         dataSet.setValueFormatter(new DefaultValueFormatter(0));
@@ -208,7 +248,7 @@ public class SellerHomeActivity extends AppCompatActivity {
         LineData lineData = new LineData(dataSets);
         lineChart.setData(lineData);
 
-        // 5. --- SỬA --- Tùy chỉnh lại biểu đồ
+        // 5. Tùy chỉnh lại biểu đồ
         lineChart.getDescription().setEnabled(false);
         lineChart.getLegend().setEnabled(true); // Bật chú thích
 
@@ -240,16 +280,13 @@ public class SellerHomeActivity extends AppCompatActivity {
     }
 
     /**
-     * Hàm setup RecyclerView cho Top Products (ĐÃ SỬA)
-     * - Thêm setNestedScrollingEnabled(false)
+     * Hàm setup RecyclerView cho Top Products (GỐC)
      */
     private void setupTopProductsList(List<TopProductData> products) {
         if(recyclerViewTopProducts == null) return;
 
-        // --- SỬA ---
         // Sửa lỗi khi lồng RecyclerView trong ScrollView
         recyclerViewTopProducts.setNestedScrollingEnabled(false);
-        // -----------
 
         recyclerViewTopProducts.setLayoutManager(new LinearLayoutManager(this));
 
@@ -259,23 +296,55 @@ public class SellerHomeActivity extends AppCompatActivity {
     }
 
 
-    // --- Các hàm UI (giữ nguyên) ---
+    // --- CÁC HÀM UI (ĐÃ THAY THẾ BẰNG LOGIC CỦA FILE 2) ---
 
     private void setHeaderExpanded(boolean expanded) {
+        // delegate to setHeaderMode(false) for expanded, true for collapsed/orders
         setHeaderMode(!expanded);
     }
 
     private void setHeaderMode(boolean ordersMode) {
-        int heightDp = 160;
-        int heightPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, heightDp, getResources().getDisplayMetrics());        RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) headerLayout.getLayoutParams();
+        // ordersMode=true => show headerOrderControls, hide etHeaderSearch, collapse header
+        // ordersMode=false => show etHeaderSearch, hide headerOrderControls, expand header
+        int heightDp = 160; // <<< Chiều cao đã thay đổi
+        int heightPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, heightDp, getResources().getDisplayMetrics());
+        RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) headerLayout.getLayoutParams();
         lp.height = heightPx;
         headerLayout.setLayoutParams(lp);
         etHeaderSearch.setVisibility(ordersMode ? View.GONE : View.VISIBLE);
         if (headerOrderControls != null) headerOrderControls.setVisibility(ordersMode ? View.VISIBLE : View.GONE);
+        // ensure product header hidden when toggling modes unless explicitly shown
+        if (productHeaderLayout != null && productHeaderLayout.getVisibility() == View.VISIBLE) {
+            // if currently visible, keep it visible only when not in orders mode
+            productHeaderLayout.setVisibility(ordersMode ? View.GONE : View.VISIBLE);
+        }
+    }
+
+    /**
+     * HÀM MỚI TỪ FILE 2
+     */
+    private void showProductHeader(boolean show) {
+        if (productHeaderLayout == null) return;
+        productHeaderLayout.setVisibility(show ? View.VISIBLE : View.GONE);
+        // when showing product header, hide search and order controls
+        if (show) {
+            if (etHeaderSearch != null) etHeaderSearch.setVisibility(View.GONE);
+            if (headerOrderControls != null) headerOrderControls.setVisibility(View.GONE);
+            // reduce header height a bit to match product header style
+            int heightPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 160, getResources().getDisplayMetrics());
+            RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) headerLayout.getLayoutParams();
+            lp.height = heightPx;
+            headerLayout.setLayoutParams(lp);
+        } else {
+            // restore expanded header
+            setHeaderExpanded(true);
+        }
     }
 
     private void popToDashboard() {
+        // clear back stack and show the XML default content
         getSupportFragmentManager().popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        // If there is any fragment occupying the container, remove it
         Fragment f = getSupportFragmentManager().findFragmentById(R.id.seller_fragment_container);
         if (f != null) {
             FragmentTransaction ft = getSupportFragmentManager().beginTransaction();

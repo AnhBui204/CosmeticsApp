@@ -31,7 +31,6 @@ public class SellerProductListActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private SellerProductAdapter adapter;
     private FloatingActionButton fabAdd;
-    private ImageButton btnRefresh;
 
     private static final int REQ_CREATE_PRODUCT = 1001;
     private static final int REQ_EDIT_PRODUCT = 1002;
@@ -46,12 +45,12 @@ public class SellerProductListActivity extends AppCompatActivity {
 
         recyclerView = findViewById(R.id.recyclerSellerProducts);
         fabAdd = findViewById(R.id.fabAddProduct);
-        btnRefresh = findViewById(R.id.btnRefresh);
 
         adapter = new SellerProductAdapter(this);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
 
+        // ---- ADD BUTTON ----
         // default: set FAB half-hidden after layout
         fabAdd.post(() -> {
             float fabWidth = fabAdd.getWidth();
@@ -118,14 +117,7 @@ public class SellerProductListActivity extends AppCompatActivity {
             }
         });
 
-        btnRefresh.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // force reload
-                loadProducts();
-            }
-        });
-
+        // ---- EDIT/DELETE BUTTONS ON ITEMS ----
         // setup action listeners
         adapter.setOnProductActionListener(new com.example.fe.ui.seller.adapter.SellerProductAdapter.OnProductActionListener() {
             @Override
@@ -166,9 +158,10 @@ public class SellerProductListActivity extends AppCompatActivity {
             }
         });
 
-    // initial load is handled in onResume to avoid duplicate calls when activity is recreated
+        // initial load is handled in onResume to avoid duplicate calls when activity is recreated
     }
 
+    // ---- ADD BUTTON ANIMATION LOGIC ----
     private int dpToPx(int dp) {
         float density = getResources().getDisplayMetrics().density;
         return (int) (dp * density + 0.5f);
@@ -183,6 +176,7 @@ public class SellerProductListActivity extends AppCompatActivity {
         }
     }
 
+    // ---- DATA REFRESH LOGIC ---
     @Override
     protected void onResume() {
         super.onResume();

@@ -52,8 +52,6 @@ public interface ApiService {
     @GET("api/cart/{userId}")
     Call<com.example.fe.models.Cart> getCartByUser(@Path("userId") String userId);
 
-}
-
     @GET("api/revenue/seller-revenue")
     Call<List<RevenueData>> getSellerRevenue(
             @Query("sellerId") String id
@@ -62,4 +60,12 @@ public interface ApiService {
     Call<List<TopProductData>> getTopSellingProducts(
             @Query("sellerId") String sellerId
     );
+    @GET("api/users/{userId}/wishlist")
+    Call<List<com.example.fe.models.Product>> getWishlist(@Path("userId") String userId);
+
+    @POST("api/users/{userId}/wishlist")
+    Call<List<com.example.fe.models.Product>> addToWishlist(@Path("userId") String userId, @Body com.example.fe.network.AddToWishlistRequest body);
+
+    @DELETE("api/users/{userId}/wishlist/{productId}")
+    Call<List<com.example.fe.models.Product>> removeFromWishlist(@Path("userId") String userId, @Path("productId") String productId);
 }
