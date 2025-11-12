@@ -21,7 +21,8 @@ public class OrdersPagerAdapter extends FragmentStateAdapter {
             case 0:
                 return OrderListFragment.newInstance("Pending");
             case 1:
-                return OrderListFragment.newInstance("Processing");
+                // Show delivered orders in the middle tab
+                return OrderListFragment.newInstance("Delivered");
             case 2:
                 return OrderListFragment.newInstance("Cancelled");
             default:

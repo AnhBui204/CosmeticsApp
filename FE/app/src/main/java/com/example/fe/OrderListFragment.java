@@ -20,6 +20,7 @@ import com.example.fe.models.Order;
 import com.example.fe.utils.SessionManager;
 
 import java.util.List;
+import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -94,7 +95,17 @@ public class OrderListFragment extends Fragment {
                     List<Order> orders = response.body();
 
                     if (orderStatus != null && !orderStatus.isEmpty()) {
-                        orders.removeIf(o -> !orderStatus.equalsIgnoreCase(o.getStatus()));
+                        // Treat 'processing' and 'shipped' as part of the Pending tab.
+                        // Backend may return statuses in lowercase; normalize with Locale.
+                        String wanted = orderStatus.toLowerCase(Locale.ROOT);
+                        if ("pending".equals(wanted)) {
+                            orders.removeIf(o -> {
+                                String s = o.getStatus() == null ? "" : o.getStatus().toLowerCase(Locale.ROOT);
+                                return !("pending".equals(s) || "processing".equals(s) || "shipped".equals(s));
+                            });
+                        } else {
+                            orders.removeIf(o -> !orderStatus.equalsIgnoreCase(o.getStatus()));
+                        }
                     }
 
                     orderAdapter = new OrderAdapter(orders, requireContext());

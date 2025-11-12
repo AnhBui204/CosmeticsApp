@@ -112,12 +112,6 @@ export const addItemToCart = asyncHandler(async (req, res) => {
     res.status(200).json(cart);
 });
 
-
-
-
-
-
-
 /**
  * @desc    Add/update item to a specific user's cart (admin or owner)
  * @route   POST /api/cart/:userId/items

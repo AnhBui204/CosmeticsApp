@@ -52,6 +52,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         TextView tvOrderNumber, tvDate, tvQuantity, tvSubtotal, tvStatus;
         MaterialButton btnDetails;
         TextView tvItemsSummary;
+
         public OrderViewHolder(@NonNull View itemView) {
             super(itemView);
             tvOrderNumber = itemView.findViewById(R.id.tv_order_number);
@@ -78,14 +79,14 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                         // (Sử dụng phương thức newInstance chúng ta đã tạo)
                         Fragment detailFragment = OrderDetailFragment.newInstance(
                                 order.getOrderCode(),
-                                order.getStatus()
-                        );
+                                order.getStatus());
 
                         // 4. Thực hiện chuyển Fragment
                         if (context instanceof FragmentActivity) {
                             FragmentActivity activity = (FragmentActivity) context;
                             activity.getSupportFragmentManager().beginTransaction()
-                                    .replace(R.id.fragment_container, detailFragment) // R.id.fragment_container là ID trong MainActivity
+                                    .replace(R.id.fragment_container, detailFragment) // R.id.fragment_container là ID
+                                                                                      // trong MainActivity
                                     .addToBackStack(null) // Thêm vào back stack để có thể quay lại
                                     .commit();
                         }
@@ -106,7 +107,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             }
             tvQuantity.setText("Quantity: " + totalQuantity);
             tvSubtotal.setText(String.format(Locale.US, "Subtotal: $%.0f", order.getTotalAmount()));
-// Nối tên tất cả sản phẩm
+            // Nối tên tất cả sản phẩm
             StringBuilder itemsSummary = new StringBuilder();
             if (order.getItems() != null) {
                 for (OrderItem item : order.getItems()) {
@@ -128,9 +129,17 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                     statusColor = ContextCompat.getColor(context, R.color.orange_500);
                     break;
                 case "processing":
+                    statusColor = ContextCompat.getColor(context, R.color.orange_500);
+                    break;
+                case "shipped":
+                    statusColor = ContextCompat.getColor(context, R.color.orange_500);
+                    break;
+                case "delivered":
                     statusColor = ContextCompat.getColor(context, R.color.green_500);
                     break;
                 case "cancelled":
+                    statusColor = ContextCompat.getColor(context, R.color.red_500);
+                    break;
                 default:
                     statusColor = ContextCompat.getColor(context, R.color.red_500);
                     break;
