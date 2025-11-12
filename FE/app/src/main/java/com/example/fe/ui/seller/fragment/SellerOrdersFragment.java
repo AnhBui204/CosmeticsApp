@@ -201,9 +201,6 @@ public class SellerOrdersFragment extends Fragment {
             adapter = new OrdersAdapter(data);
             recyclerView.setAdapter(adapter);
 
-
-
-
             adapter = new OrdersAdapter(data);
             recyclerView.setAdapter(adapter);
             return view;
@@ -273,12 +270,10 @@ public class SellerOrdersFragment extends Fragment {
                 if (dateFilter != null) {
                     matchDate = dateFilter.equals(o.getCreatedAt());
                 }
-
                 if (matchText && matchDate) displayed.add(o);
             }
             notifyDataSetChanged();
         }
-
 
         @NonNull
         @Override
@@ -297,7 +292,6 @@ public class SellerOrdersFragment extends Fragment {
             // Created date
             holder.tvOrderDate.setText(o.getCreatedAt());
 
-
             // Quantity tổng số sản phẩm
             int totalQuantity = 0;
             if (o.getItems() != null) {
@@ -306,14 +300,12 @@ public class SellerOrdersFragment extends Fragment {
             final int finalQuantity = totalQuantity;
             holder.tvQuantity.setText("Quantity: " + finalQuantity);
 
-
             // Subtotal
             holder.tvSubtotal.setText(String.format(Locale.US, "Subtotal: $%.2f", o.getTotalAmount()));
 
             // Customer name
             // Customer name
             holder.tvCustomerName.setText(o.getShippingAddress() != null ? o.getShippingAddress() : "N/A");
-
 
             // Items summary
             StringBuilder itemsSummary = new StringBuilder();
@@ -352,7 +344,6 @@ public class SellerOrdersFragment extends Fragment {
                 ctx.startActivity(intent);
             });
         }
-
 
         @Override
         public int getItemCount() {

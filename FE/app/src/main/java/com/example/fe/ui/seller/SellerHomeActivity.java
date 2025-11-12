@@ -1,6 +1,5 @@
 package com.example.fe.ui.seller;
 
-// Import các thư viện cần thiết
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -18,20 +17,20 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.ImageButton; // << THÊM IMPORT
+import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.example.fe.R;
-import com.example.fe.data.RevenueData; // Model
-import com.example.fe.data.TopProductData; // Model
+import com.example.fe.data.RevenueData;
+import com.example.fe.data.TopProductData;
 import com.example.fe.ui.profile.ProfileActivity;
-import com.example.fe.ui.seller.adapter.TopProductAdapter; // Adapter
-import com.example.fe.ui.seller.fragment.SellerOrdersFragment; // << THÊM IMPORT
-import com.example.fe.ui.seller.fragment.SellerProductsFragment; // << THÊM IMPORT
-import com.example.fe.utils.SessionManager; // Import để lấy ID
+import com.example.fe.ui.seller.adapter.TopProductAdapter;
+import com.example.fe.ui.seller.fragment.SellerOrdersFragment;
+import com.example.fe.ui.seller.fragment.SellerProductsFragment;
+import com.example.fe.utils.SessionManager;
 
-// --- IMPORT THÊM CHO BIỂU ĐỒ ---
+// --- BIỂU ĐỒ ---
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.Entry;
