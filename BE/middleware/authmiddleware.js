@@ -50,3 +50,15 @@ export const isAdmin = (req, res, next) => {
         throw new Error('Không có quyền truy cập, yêu cầu quyền Admin');
     }
 };
+
+/**
+ * @desc Middleware kiểm tra quyền Seller hoặc Admin
+ */
+export const isSellerOrAdmin = (req, res, next) => {
+    if (req.user && (req.user.role === 'seller' || req.user.role === 'admin')) {
+        next();
+    } else {
+        res.status(403);
+        throw new Error('Không có quyền truy cập, yêu cầu quyền Seller hoặc Admin');
+    }
+};

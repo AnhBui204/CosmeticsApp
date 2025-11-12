@@ -1,7 +1,6 @@
 package com.example.fe.ui.voucher;
 import com.example.fe.R;
-import com.example.fe.models.VoucherItem;
-
+import com.example.fe.models.Voucher;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -19,11 +18,18 @@ import java.util.List;
 public class VoucherAdapter extends RecyclerView.Adapter<VoucherAdapter.VoucherViewHolder> {
 
     private Context context;
-    private List<VoucherItem> voucherList;
+    private List<Voucher> voucherList;
+    private OnDeleteCallback onDelete;
+    private OnEditCallback onEdit;
 
-    public VoucherAdapter(Context context, List<VoucherItem> voucherList) {
+    public interface OnDeleteCallback { void onDelete(String id); }
+    public interface OnEditCallback { void onEdit(Voucher voucher, int position); }
+
+    public VoucherAdapter(Context context, List<Voucher> voucherList, OnDeleteCallback onDelete, OnEditCallback onEdit) {
         this.context = context;
         this.voucherList = voucherList;
+        this.onDelete = onDelete;
+        this.onEdit = onEdit;
     }
 
     @NonNull
@@ -36,45 +42,24 @@ public class VoucherAdapter extends RecyclerView.Adapter<VoucherAdapter.VoucherV
 
     @Override
     public void onBindViewHolder(@NonNull VoucherViewHolder holder, int position) {
-        VoucherItem voucher = voucherList.get(position);
+        Voucher voucher = voucherList.get(position);
 
         holder.tvCode.setText(voucher.getCode());
         holder.tvTitle.setText(voucher.getTitle());
         holder.tvDescription.setText(voucher.getDescription());
         holder.tvEndDate.setText(voucher.getEndDate());
-        holder.tvStatus.setText(voucher.getStatus());
+        holder.tvStatus.setText(voucher.isActive() ? "ACTIVE" : "INACTIVE");
 
-        // Màu trạng thái
-        switch (voucher.getStatus()) {
-            case "ACTIVE":
-                holder.tvStatus.setTextColor(0xFF4CAF50);
-                break;
-            case "EXPIRED":
-                holder.tvStatus.setTextColor(0xFFF44336);
-                break;
-            default:
-                holder.tvStatus.setTextColor(0xFF9E9E9E);
-                break;
-        }
-
-        // Click "Details" để sửa
         holder.btnEdit.setOnClickListener(v -> {
-            Intent intent = new Intent(context, AddVoucherActivity.class);
-            intent.putExtra("editVoucher", voucher);
-            intent.putExtra("position", position);
-            context.startActivity(intent);
+            if (onEdit != null) onEdit.onEdit(voucher, position);
         });
 
-
-        // Click "Delete"
         holder.btnDelete.setOnClickListener(v -> {
             new AlertDialog.Builder(context)
                     .setTitle("Delete voucher")
                     .setMessage("Are you sure you want to delete " + voucher.getCode() + "?")
                     .setPositiveButton("Yes", (dialog, which) -> {
-                        voucherList.remove(position);
-                        notifyItemRemoved(position);
-                        notifyItemRangeChanged(position, voucherList.size());
+                        if (onDelete != null) onDelete.onDelete(voucher.getId());
                     })
                     .setNegativeButton("No", null)
                     .show();

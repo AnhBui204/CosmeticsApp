@@ -4,36 +4,44 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-
 import com.example.fe.R;
-import com.example.fe.models.VoucherItem;
+import com.example.fe.models.Voucher;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class VoucherFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private VoucherAdapter adapter;
-    private List<VoucherItem> allVouchers;
-    private List<VoucherItem> filteredVouchers;
+    private List<Voucher> allVouchers;
 
     private TextView chipAll, chipActive, chipUpcoming, chipExpired;
     private FloatingActionButton fabAdd;
 
-    private static final int REQ_ADD_VOUCHER = 1;
+    private ActivityResultLauncher<Intent> voucherLauncher;
+    private VoucherViewModel viewModel;
 
     @Nullable
     @Override
@@ -52,54 +60,103 @@ public class VoucherFragment extends Fragment {
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        // --- Dữ liệu mẫu ---
-        allVouchers = new ArrayList<>();
-        allVouchers.add(new VoucherItem("VC1001", "10% OFF", "Min $30", "2025-12-01", "ACTIVE"));
-        allVouchers.add(new VoucherItem("VC1002", "Free Shipping", "Min $20", "2025-11-20", "UPCOMING"));
-        allVouchers.add(new VoucherItem("VC1003", "$5 OFF", "Min $50", "2024-09-10", "EXPIRED"));
-        allVouchers.add(new VoucherItem("VC1004", "20% OFF", "Min $40", "2025-12-10", "ACTIVE"));
+        viewModel = new ViewModelProvider(this, new ViewModelProvider.AndroidViewModelFactory(requireActivity().getApplication())).get(VoucherViewModel.class);
 
-        filteredVouchers = new ArrayList<>(allVouchers);
-        adapter = new VoucherAdapter(getContext(), filteredVouchers);
+        allVouchers = new ArrayList<>();
+        adapter = new VoucherAdapter(getContext(), allVouchers, new VoucherAdapter.OnDeleteCallback() {
+            @Override
+            public void onDelete(String id) {
+                deleteVoucher(id);
+            }
+        }, new VoucherAdapter.OnEditCallback() {
+            @Override
+            public void onEdit(Voucher voucher, int position) {
+                Intent intent = new Intent(getContext(), AddVoucherActivity.class);
+                intent.putExtra("editVoucher", voucher);
+                intent.putExtra("position", position);
+                // use ActivityResultLauncher to open AddVoucherActivity
+                if (voucherLauncher != null) voucherLauncher.launch(intent);
+            }
+        });
         recyclerView.setAdapter(adapter);
 
-        // --- Thiết lập chip ---
-        setupChipListeners();
-        highlightChip(chipAll); // mặc định All được chọn
-        filterVouchers("ALL");
+        // register launcher for add/edit voucher
+        voucherLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                Intent data = result.getData();
+                Voucher returned = (Voucher) data.getSerializableExtra("newVoucher");
+                int pos = data.getIntExtra("position", -1);
+                if (returned == null) return; // nothing to do
 
-        // --- Nút thêm voucher ---
+                // If activity already performed create/update on server and returned the created/updated object,
+                // update UI immediately instead of reloading from server.
+                if (pos >= 0) {
+                    // update existing item in list
+                    if (pos < allVouchers.size()) {
+                        allVouchers.set(pos, returned);
+                        adapter.notifyItemChanged(pos);
+                    } else {
+                        // fallback: append if index out of range
+                        allVouchers.add(returned);
+                        adapter.notifyItemInserted(allVouchers.size() - 1);
+                    }
+                } else {
+                    // new voucher: add to top
+                    allVouchers.add(0, returned);
+                    adapter.notifyItemInserted(0);
+                    // scroll to top
+                    RecyclerView rv = recyclerView;
+                    if (rv != null) rv.scrollToPosition(0);
+                }
+            }
+        });
+
         fabAdd.setOnClickListener(v -> {
             Intent intent = new Intent(getContext(), AddVoucherActivity.class);
-            startActivityForResult(intent, REQ_ADD_VOUCHER);
+            voucherLauncher.launch(intent);
         });
+
+        // observe
+        viewModel.vouchers.observe(getViewLifecycleOwner(), vouchers -> {
+            allVouchers.clear();
+            if (vouchers != null) allVouchers.addAll(vouchers);
+            adapter.notifyDataSetChanged();
+        });
+
+        viewModel.error.observe(getViewLifecycleOwner(), err -> {
+            if (err != null) Log.e("VoucherFragment", "Error: " + err);
+        });
+
+        viewModel.loadVouchers();
 
         return view;
     }
 
-    // ----------------- CHIP LOGIC -----------------
-    private void setupChipListeners() {
-        chipAll.setOnClickListener(v -> {
-            highlightChip(chipAll);
-            filterVouchers("ALL");
-        });
+    private void deleteVoucher(String id) {
+        viewModel.deleteVoucher(id, new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    viewModel.loadVouchers();
+                } else {
+                    Log.e("VoucherFragment", "Delete failed: " + response.code());
+                }
+            }
 
-        chipActive.setOnClickListener(v -> {
-            highlightChip(chipActive);
-            filterVouchers("ACTIVE");
-        });
-
-        chipUpcoming.setOnClickListener(v -> {
-            highlightChip(chipUpcoming);
-            filterVouchers("UPCOMING");
-        });
-
-        chipExpired.setOnClickListener(v -> {
-            highlightChip(chipExpired);
-            filterVouchers("EXPIRED");
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.e("VoucherFragment", "Delete error: " + t.getMessage());
+            }
         });
     }
 
+    // ----------------- CHIP LOGIC (kept for UI filter) -----------------
+    private void setupChipListeners() {
+        chipAll.setOnClickListener(v -> highlightChip(chipAll));
+        chipActive.setOnClickListener(v -> highlightChip(chipActive));
+        chipUpcoming.setOnClickListener(v -> highlightChip(chipUpcoming));
+        chipExpired.setOnClickListener(v -> highlightChip(chipExpired));
+    }
 
     private void highlightChip(TextView selectedChip) {
         TextView[] chips = {chipAll, chipActive, chipUpcoming, chipExpired};
@@ -109,45 +166,7 @@ public class VoucherFragment extends Fragment {
             chip.setTextColor(getResources().getColor(R.color.gray_700));
         }
 
-
         selectedChip.setBackgroundResource(R.drawable.bg_chip_filled);
         selectedChip.setTextColor(Color.WHITE);
-    }
-
-    /**
-     * Lọc danh sách voucher theo trạng thái (All / Active / Upcoming / Expired)
-     */
-    private void filterVouchers(String status) {
-        filteredVouchers.clear();
-
-        if (status.equals("ALL")) {
-            filteredVouchers.addAll(allVouchers);
-        } else {
-            for (VoucherItem v : allVouchers) {
-                if (v.getStatus().equalsIgnoreCase(status)) {
-                    filteredVouchers.add(v);
-                }
-            }
-        }
-        adapter.notifyDataSetChanged();
-    }
-
-    // ----------------- CRUD -----------------
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQ_ADD_VOUCHER && resultCode == Activity.RESULT_OK && data != null) {
-            VoucherItem newVoucher = (VoucherItem) data.getSerializableExtra("newVoucher");
-            int pos = data.getIntExtra("position", -1);
-
-            if (pos >= 0) { // Update voucher
-                allVouchers.set(pos, newVoucher);
-            } else { // Add new voucher
-                allVouchers.add(newVoucher);
-            }
-
-            filterVouchers("ALL");
-            highlightChip(chipAll);
-        }
     }
 }

@@ -94,7 +94,7 @@ export const applyVoucherToCart = asyncHandler(async (req, res) => {
 });
 
 /**
- * Admin / Seller CRUD
+ *  Seller CRUD
  */
 // Create voucher
 export const createVoucher = asyncHandler(async (req, res) => {
@@ -112,6 +112,18 @@ export const createVoucher = asyncHandler(async (req, res) => {
     if (exists) {
         res.status(400);
         throw new Error('Mã voucher đã tồn tại');
+    }
+
+    // Validate required fields early to provide clear errors instead of Mongoose ValidationError
+    const allowedTypes = ['percentage', 'fixed_amount'];
+    if (!data.discountType || !allowedTypes.includes(data.discountType)) {
+        res.status(400);
+        throw new Error('discountType là bắt buộc và phải là một trong: percentage, fixed_amount');
+    }
+
+    if (typeof data.discountValue === 'undefined' || isNaN(Number(data.discountValue))) {
+        res.status(400);
+        throw new Error('discountValue là bắt buộc và phải là một số');
     }
 
     const voucher = await Voucher.create({
@@ -165,11 +177,25 @@ export const updateVoucher = asyncHandler(async (req, res) => {
     }
 
     const data = req.body;
+    const allowedTypes = ['percentage', 'fixed_amount'];
     if (data.code) voucher.code = data.code.toUpperCase();
     if (typeof data.title !== 'undefined') voucher.title = data.title;
     if (typeof data.description !== 'undefined') voucher.description = data.description;
-    if (typeof data.discountType !== 'undefined') voucher.discountType = data.discountType;
-    if (typeof data.discountValue !== 'undefined') voucher.discountValue = data.discountValue;
+    if (typeof data.discountType !== 'undefined') {
+        if (!allowedTypes.includes(data.discountType)) {
+            res.status(400);
+            throw new Error('discountType phải là một trong: percentage, fixed_amount');
+        }
+        voucher.discountType = data.discountType;
+    }
+
+    if (typeof data.discountValue !== 'undefined') {
+        if (isNaN(Number(data.discountValue))) {
+            res.status(400);
+            throw new Error('discountValue phải là một số hợp lệ');
+        }
+        voucher.discountValue = data.discountValue;
+    }
     if (typeof data.maxDiscountAmount !== 'undefined') voucher.maxDiscountAmount = data.maxDiscountAmount;
     if (typeof data.minOrderAmount !== 'undefined') voucher.minOrderAmount = data.minOrderAmount;
     if (typeof data.usageLimit !== 'undefined') voucher.usageLimit = data.usageLimit;
@@ -189,6 +215,12 @@ export const deleteVoucher = asyncHandler(async (req, res) => {
         throw new Error('Không tìm thấy voucher để xóa');
     }
 
-    await voucher.remove();
+    // Use model-level deletion to avoid calling instance.remove() which may not exist
+    const deleted = await Voucher.findByIdAndDelete(req.params.id);
+    if (!deleted) {
+        res.status(404);
+        throw new Error('Không tìm thấy voucher để xóa');
+    }
+
     res.json({ success: true, message: 'Voucher đã được xóa' });
 });

@@ -116,6 +116,42 @@
                     android:inputType="textMultiLine" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- Discount Type (Spinner) -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Discount Type"
+                android:textColor="@color/gray_700"
+                android:layout_marginTop="16dp" />
+
+            <Spinner
+                android:id="@+id/spinnerDiscountType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:spinnerMode="dropdown" />
+
+            <!-- Discount Value -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Discount Value (numeric)"
+                android:layout_marginTop="12dp"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp"
+                app:boxStrokeColor="@color/pink"
+                app:hintTextColor="@color/pink">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etDiscountValue"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="numberDecimal" />
+            </com.google.android.material.textfield.TextInputLayout>
+
             <!-- Ngày kết thúc -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"

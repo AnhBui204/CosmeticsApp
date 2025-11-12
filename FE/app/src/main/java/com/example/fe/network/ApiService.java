@@ -4,6 +4,7 @@ import com.example.fe.data.TopProductData;
 import com.example.fe.models.ProductsResponse;
 import com.example.fe.models.Category;
 import com.example.fe.data.RevenueData;
+import com.example.fe.models.Voucher;
 import java.util.List;
 
 import retrofit2.Call;
@@ -68,4 +69,20 @@ public interface ApiService {
 
     @DELETE("api/users/{userId}/wishlist/{productId}")
     Call<List<com.example.fe.models.Product>> removeFromWishlist(@Path("userId") String userId, @Path("productId") String productId);
+
+    // --- Voucher endpoints ---
+    @GET("api/vouchers")
+    Call<com.example.fe.models.VouchersResponse> getVouchers(@Query("page") Integer page, @Query("limit") Integer limit, @Query("active") Boolean active);
+
+    @GET("api/vouchers/{id}")
+    Call<Voucher> getVoucherById(@Path("id") String id);
+
+    @POST("api/vouchers")
+    Call<Voucher> createVoucher(@Body Voucher body);
+
+    @PUT("api/vouchers/{id}")
+    Call<Voucher> updateVoucher(@Path("id") String id, @Body Voucher body);
+
+    @DELETE("api/vouchers/{id}")
+    Call<okhttp3.ResponseBody> deleteVoucher(@Path("id") String id);
 }
