@@ -17,6 +17,7 @@ import com.example.fe.utils.SessionManager;
 import com.example.fe.data.UserData;
 
 import org.json.JSONObject;
+import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -105,10 +106,14 @@ public class CustomerCheckoutActivity extends AppCompatActivity {
                 // Gom thông tin order
                 JSONObject json = new JSONObject();
                 json.put("amount", (int) totalAmount); // tổng tiền
-                json.put("orderId", "ORDER_" + System.currentTimeMillis());
+                String orderId = "ORDER_" + System.currentTimeMillis();
+                json.put("orderId", orderId);
                 json.put("userId", currentUser.getId());
                 json.put("paymentMethod", "payos");
                 json.put("shippingAddress", getUserAddress(currentUser));
+
+                // Debug: log minimal payload info (avoid logging token)
+                Log.d("CustomerCheckout", "createPayOSOrder -> orderId=" + orderId + ", amount=" + (int) totalAmount + ", userId=" + currentUser.getId() + ", itemsCount=" + (items != null ? items.size() : 0));
 
                 // Có thể gửi danh sách sản phẩm (nếu backend cần)
                 // JSONArray productArray = new JSONArray();
@@ -136,6 +141,7 @@ public class CustomerCheckoutActivity extends AppCompatActivity {
                     JSONObject result = new JSONObject(response.toString());
                     String checkoutUrl = result.getString("url");
 
+                    Log.d("CustomerCheckout", "createPayOSOrder success -> checkoutUrl=" + checkoutUrl);
                     runOnUiThread(() -> openPaymentUrl(checkoutUrl));
                 } else {
                     // read error stream to get backend message (if any)
@@ -147,13 +153,14 @@ public class CustomerCheckoutActivity extends AppCompatActivity {
 
                     final String serverMessage = errorResp.length() > 0 ? errorResp.toString() : "Tạo đơn PayOS thất bại";
                     final int code = responseCode;
-                    System.out.println("createPayOSOrder failed: code=" + code + ", body=" + serverMessage);
+                    Log.e("CustomerCheckout", "createPayOSOrder failed: code=" + code + ", body=" + serverMessage);
                     runOnUiThread(() ->
                             Toast.makeText(this, "Tạo đơn PayOS thất bại: (" + code + ") " + serverMessage, Toast.LENGTH_LONG).show()
                     );
                 }
                 conn.disconnect();
             } catch (Exception e) {
+                Log.e("CustomerCheckout", "Exception while creating PayOS order", e);
                 runOnUiThread(() ->
                         Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show()
                 );

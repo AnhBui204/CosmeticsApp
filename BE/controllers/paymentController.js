@@ -3,6 +3,7 @@ import crypto from "crypto";
 import axios from "axios";
 import { Order } from "../models/orderModel.js";
 import { Cart } from "../models/cartModel.js";
+import { Product } from "../models/productModel.js";
 
 const PAYOS_SANDBOX_API = "https://api-merchant.payos.vn/v2/payment-requests";
 const PAYOS_PROD_API = "https://api-merchant.payos.vn/v2/payment-requests";
@@ -134,14 +135,73 @@ export const handleWebhook = async (req, res) => {
           newStatus = "pending";
       }
 
-      // Update trực tiếp trong DB
-      await Order.findOneAndUpdate(
-        { orderCode },
-        { status: newStatus },
-        { new: true }
-      );
+      // If payment succeeded, decrement stock and clear the buyer's cart in a transaction
+      if (payload.success) {
+        const session = await mongoose.startSession();
+        session.startTransaction();
+        try {
+          // Find the order within the session
+          const order = await Order.findOne({ orderCode }).session(session);
+          if (!order) {
+            console.warn(`[handleWebhook] Order ${orderCode} not found`);
+          } else {
+            // Update order status
+            order.status = newStatus;
+            await order.save({ session });
 
-      console.log(`Order ${orderCode} updated to ${newStatus}`);
+            // Decrement stock for each item (safe: don't allow negative stock)
+            for (const item of order.items) {
+              try {
+                const prod = await Product.findById(item.productId).session(session);
+                if (!prod) {
+                  console.warn(`[handleWebhook] Product ${item.productId} not found for order ${orderCode}`);
+                  continue;
+                }
+
+                const remaining = Math.max(0, (prod.stockQuantity || 0) - (item.quantity || 0));
+                // If stock is already less than required, set to 0 and log a warning
+                if (prod.stockQuantity < item.quantity) {
+                  console.warn(`[handleWebhook] Product ${prod._id} stock (${prod.stockQuantity}) < ordered quantity (${item.quantity}). Setting to 0.`);
+                }
+
+                await Product.findByIdAndUpdate(
+                  prod._id,
+                  { $set: { stockQuantity: remaining } },
+                  { session }
+                );
+              } catch (pErr) {
+                console.error(`[handleWebhook] Error updating product ${item.productId}:`, pErr.message || pErr);
+                // continue with other items
+              }
+            }
+
+            // Clear buyer's cart if userId present on order
+            if (order.userId) {
+              try {
+                await Cart.findOneAndUpdate(
+                  { userId: order.userId },
+                  { items: [], updatedAt: Date.now() },
+                  { session }
+                );
+              } catch (cErr) {
+                console.error(`[handleWebhook] Error clearing cart for user ${order.userId}:`, cErr.message || cErr);
+              }
+            }
+          }
+
+          await session.commitTransaction();
+          session.endSession();
+          console.log(`Order ${orderCode} processed: status set to ${newStatus}, stock decremented and cart cleared.`);
+        } catch (txErr) {
+          await session.abortTransaction();
+          session.endSession();
+          console.error('[handleWebhook] Transaction error:', txErr);
+        }
+      } else {
+        // Payment failed/cancelled: just update status
+        await Order.findOneAndUpdate({ orderCode }, { status: newStatus }, { new: true });
+        console.log(`Order ${orderCode} updated to ${newStatus}`);
+      }
     }
 
     res.status(200).send('OK');

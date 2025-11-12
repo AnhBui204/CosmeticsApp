@@ -10,32 +10,67 @@ export const getSellerRevenueForChart = async (req, res) => {
 
         // --- PHẦN LOGIC THÊM DATA MẪU (PADDING) ---
 
-        // 1. Tạo 7 mốc ngày (từ 6 ngày trước đến hôm nay)
-        const allDates = [];
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6); // Bắt đầu từ 6 ngày trước
-        sevenDaysAgo.setHours(0, 0, 0, 0);
+        // Use an explicit timezone so date boundaries match between JS and Mongo aggregation.
+        // Set TIMEZONE to an IANA name (e.g. 'Asia/Ho_Chi_Minh') via env or default to VN timezone.
+        const TIMEZONE = process.env.TIMEZONE || 'Asia/Ho_Chi_Minh';
 
+        // 1. Tạo 7 mốc ngày (từ 6 ngày trước đến hôm nay) in the specified timezone
+        const allDates = [];
+        const today = new Date();
+        // calculate the start date (6 days before today) using local timezone formatting
+        const startDate = new Date(today);
+        startDate.setDate(startDate.getDate() - 6);
+
+        const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: TIMEZONE }); // en-CA -> YYYY-MM-DD
         for (let i = 0; i < 7; i++) {
-            const date = new Date(sevenDaysAgo);
-            date.setDate(date.getDate() + i);
-            // Thêm vào mảng với định dạng YYYY-MM-DD
-            allDates.push(date.toISOString().split('T')[0]);
+            const d = new Date(startDate);
+            d.setDate(startDate.getDate() + i);
+            // format in YYYY-MM-DD according to TIMEZONE
+            const dateStr = fmt.format(d);
+            allDates.push(dateStr);
         }
-        // allDates giờ là: ["2025-11-06", "2025-11-07", ..., "2025-11-12"]
+
+        // compute start and end date strings for the range (YYYY-MM-DD) in the timezone
+        const startDateStr = allDates[0];
+        const endDateStr = allDates[allDates.length - 1];
+        console.log(`[revenueController] TIMEZONE=${TIMEZONE}, start=${startDateStr}, end=${endDateStr}`);
+
+        // DEBUG: dump the latest orders for this seller so we can verify what's stored in DB
+        try {
+            const recentOrders = await Order.find({ sellerId: new mongoose.Types.ObjectId(sellerId) })
+                .sort({ createdAt: -1 })
+                .limit(10)
+                .lean();
+            console.log('[revenueController] recentOrders sample:', recentOrders.map(o => ({
+                _id: o._id,
+                orderCode: o.orderCode,
+                status: o.status,
+                createdAt: o.createdAt,
+                totalAmount: o.totalAmount,
+                itemsCount: (o.items && o.items.length) || 0
+            })));
+        } catch (dbgErr) {
+            console.error('[revenueController] failed to read recentOrders for debug', dbgErr);
+        }
 
         // 2. Lấy dữ liệu thật từ CSDL (như code của bạn)
         const revenueData = await Order.aggregate([
+            // Match delivered orders whose createdAt date (in TIMEZONE) falls between startDateStr and endDateStr
             {
                 $match: {
                     sellerId: new mongoose.Types.ObjectId(sellerId),
                     status: 'delivered',
-                    createdAt: { $gte: sevenDaysAgo } // Lấy từ mốc 7 ngày
+                    $expr: {
+                        $and: [
+                            { $gte: [ { $dateToString: { format: "%Y-%m-%d", date: "$createdAt", timezone: TIMEZONE } }, startDateStr ] },
+                            { $lte: [ { $dateToString: { format: "%Y-%m-%d", date: "$createdAt", timezone: TIMEZONE } }, endDateStr ] }
+                        ]
+                    }
                 }
             },
             {
                 $group: {
-                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt", timezone: TIMEZONE } },
                     dailyRevenue: { $sum: "$totalAmount" }
                 }
             },
@@ -90,7 +125,7 @@ export const getTopSellingProducts = async (req, res) => {
                 // 1. Lọc đơn hàng của seller và đã giao thành công
                 $match: {
                     sellerId: new mongoose.Types.ObjectId(sellerId),
-                    status: 'delivered'
+                    status: {$in: ['processing', 'delivered']}
                 }
             },
             {
@@ -102,6 +137,7 @@ export const getTopSellingProducts = async (req, res) => {
                 $group: {
                     _id: '$items.productId',
                     name: { $first: '$items.name' }, // Lấy tên sản phẩm
+                    image: { $first: '$items.image' }, // Lấy ảnh (nếu order lưu ảnh sản phẩm khi tạo order)
                     totalQuantity: { $sum: '$items.quantity' }, // Cộng dồn số lượng
                     totalRevenue: { $sum: { $multiply: ['$items.quantity', '$items.price'] } } // Tính tổng doanh thu
                 }
@@ -115,14 +151,26 @@ export const getTopSellingProducts = async (req, res) => {
                 $limit: 5
             },
             {
-                // 6. Định dạng lại output
+                // 6. Lookup product to obtain images (fallback when orders didn't capture image)
+                $lookup: {
+                    from: 'products',
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'productInfo'
+                }
+            },
+            {
+                $unwind: { path: '$productInfo', preserveNullAndEmptyArrays: true }
+            },
+            {
+                // 7. Định dạng lại output, prefer productInfo.images[0] over the image stored in order.items
                 $project: {
                     _id: 0,
                     productId: '$_id',
                     name: '$name',
+                    image: { $ifNull: [ { $arrayElemAt: ['$productInfo.images', 0] }, '$image' ] },
                     totalQuantity: '$totalQuantity',
                     totalRevenue: '$totalRevenue'
-
                 }
             }
         ]);

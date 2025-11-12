@@ -88,7 +88,12 @@ public class SellerViewModel extends ViewModel {
             @Override
             public void onResponse(Call<List<TopProductData>> call, Response<List<TopProductData>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    _topProducts.postValue(response.body());
+                    // Debug: log returned image URLs for troubleshooting
+                    List<TopProductData> list = response.body();
+                    for (TopProductData p : list) {
+                        Log.d("SellerViewModel", "TopProduct: id=" + p.getProductId() + ", image=" + p.getImage());
+                    }
+                    _topProducts.postValue(list);
                 } else {
                     _error.postValue("Failed to load top products: " + response.code());
                     Log.e("SellerViewModel", "API Error (Top Products): " + response.message());

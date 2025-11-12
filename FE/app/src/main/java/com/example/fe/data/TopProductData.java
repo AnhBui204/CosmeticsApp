@@ -17,6 +17,10 @@ public class TopProductData {
     @SerializedName("totalRevenue")
     private double totalRevenue;
 
+    // optional image URL for the product
+    @SerializedName("image")
+    private String image;
+
     // Getters
     public String getProductId() { return productId; }
     public String getName() { return name; }
@@ -24,4 +28,7 @@ public class TopProductData {
 
     // --- THÊM GETTER MỚI ---
     public double getTotalRevenue() { return totalRevenue; }
+
+    // optional image getter
+    public String getImage() { return image; }
 }
