@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,12 +17,21 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.fe.OrderDetailProductAdapter;
+import com.example.fe.api.ApiClient;
+import com.example.fe.api.UserService;
+import com.example.fe.models.Order;
+import com.example.fe.models.OrderItem;
 import com.example.fe.models.ProductItem;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class OrderDetailFragment extends Fragment {
 
@@ -31,33 +41,23 @@ public class OrderDetailFragment extends Fragment {
     private String orderId;
     private String orderStatus;
 
-    // Views
-    private Toolbar toolbar;
-    private TextView tvToolbarTitle, tvOrderNumber, tvTrackingNumber, tvAddress;
+    private RecyclerView recyclerViewProducts;
+    private OrderDetailProductAdapter productAdapter;
+    private final List<ProductItem> productList = new ArrayList<>();
+    private TextView tvSubtotal, tvShipping, tvTotal;
+
+    private TextView tvOrderNumber, tvAddress;
     private MaterialCardView bannerDelivered, bannerOnTheWay;
     private LinearLayout buttonGroupDelivered;
     private MaterialButton buttonContinueShopping;
-    private RecyclerView recyclerViewProducts;
 
-    private OrderDetailProductAdapter productAdapter;
-    private List<ProductItem> productList;
-
-    public static OrderDetailFragment newInstance(String orderId, String status) {
+    public static OrderDetailFragment newInstance(String orderCode, String status) {
         OrderDetailFragment fragment = new OrderDetailFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_ORDER_ID, orderId);
+        args.putString(ARG_ORDER_ID, orderCode);
         args.putString(ARG_ORDER_STATUS, status);
         fragment.setArguments(args);
         return fragment;
-    }
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            orderId = getArguments().getString(ARG_ORDER_ID);
-            orderStatus = getArguments().getString(ARG_ORDER_STATUS);
-        }
     }
 
     @Nullable
@@ -65,51 +65,46 @@ public class OrderDetailFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_order_detail, container, false);
 
-        bindViews(view);
-        setupToolbar();
-        setupRecyclerView();
-        updateUiBasedOnStatus();
-        setupClickListeners(view);
-        loadOrderData(); // Tải dữ liệu giả
+        if (getArguments() != null) {
+            orderId = getArguments().getString(ARG_ORDER_ID);
+            orderStatus = getArguments().getString(ARG_ORDER_STATUS);
+        }
 
-        return view;
-    }
-
-    private void bindViews(View view) {
-        toolbar = view.findViewById(R.id.toolbar);
-        tvToolbarTitle = view.findViewById(R.id.toolbar_title);
+        recyclerViewProducts = view.findViewById(R.id.recycler_view_products);
+        tvOrderNumber = view.findViewById(R.id.tv_info_order_number);
+        tvAddress = view.findViewById(R.id.tv_info_address);
         bannerDelivered = view.findViewById(R.id.banner_delivered);
         bannerOnTheWay = view.findViewById(R.id.banner_ontheway);
         buttonGroupDelivered = view.findViewById(R.id.button_group_delivered);
         buttonContinueShopping = view.findViewById(R.id.btn_continue_shopping);
-        recyclerViewProducts = view.findViewById(R.id.recycler_view_products);
+        tvTotal = view.findViewById(R.id.tv_total_amount);
 
-        // Views trong card thông tin
-        tvOrderNumber = view.findViewById(R.id.tv_info_order_number);
-        tvTrackingNumber = view.findViewById(R.id.tv_info_tracking_number);
-        tvAddress = view.findViewById(R.id.tv_info_address);
-    }
+        setupRecyclerView();
+        updateUiBasedOnStatus();
+        loadOrderDataFromAPI();
 
-    private void setupToolbar() {
-        tvToolbarTitle.setText("Order #" + orderId);
-        toolbar.setNavigationOnClickListener(v -> getParentFragmentManager().popBackStack());
+        return view;
     }
 
     private void setupRecyclerView() {
-        productList = new ArrayList<>();
         productAdapter = new OrderDetailProductAdapter(productList);
         recyclerViewProducts.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerViewProducts.setAdapter(productAdapter);
-        recyclerViewProducts.setNestedScrollingEnabled(false); // Quan trọng khi dùng trong NestedScrollView
+        recyclerViewProducts.setNestedScrollingEnabled(false);
     }
 
     private void updateUiBasedOnStatus() {
-        if ("Delivered".equals(orderStatus)) {
+        if ("delivered".equalsIgnoreCase(orderStatus)) {
             bannerDelivered.setVisibility(View.VISIBLE);
             buttonGroupDelivered.setVisibility(View.VISIBLE);
             bannerOnTheWay.setVisibility(View.GONE);
             buttonContinueShopping.setVisibility(View.GONE);
-        } else { // "Pending" or "On the way"
+        } else if ("cancelled".equalsIgnoreCase(orderStatus)) {
+            bannerDelivered.setVisibility(View.GONE);
+            buttonGroupDelivered.setVisibility(View.GONE);
+            bannerOnTheWay.setVisibility(View.GONE);
+            buttonContinueShopping.setVisibility(View.VISIBLE);
+        } else {
             bannerOnTheWay.setVisibility(View.VISIBLE);
             buttonContinueShopping.setVisibility(View.VISIBLE);
             bannerDelivered.setVisibility(View.GONE);
@@ -117,68 +112,38 @@ public class OrderDetailFragment extends Fragment {
         }
     }
 
-    private void setupClickListeners(View view) {
-        // Nút Rate
-        view.findViewById(R.id.btn_rate).setOnClickListener(v -> {
-            // Chuyển qua RateProductFragment
-            getParentFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, new RateProductFragment())
-                    .addToBackStack(null)
-                    .commit();
-        });
-
-        // Banner "Track your order"
-        bannerOnTheWay.setOnClickListener(v -> {
-            // Chuyển qua TrackOrderFragment
-            getParentFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, new TrackOrderFragment())
-                    .addToBackStack(null)
-                    .commit();
-        });
-
-        // Return Home button -> mở HomeActivity
-        View btnReturn = view.findViewById(R.id.btn_return_home);
-        if (btnReturn != null) {
-            btnReturn.setOnClickListener(v -> {
-                if (getActivity() != null) {
-                    Intent intent = new Intent(getActivity(), com.example.fe.ui.home.HomeActivity.class);
-                    // Tùy chọn: xóa stack trên cùng để tránh quay lại màn hình chi tiết
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                    startActivity(intent);
+    private void loadOrderDataFromAPI() {
+        UserService userService = ApiClient.getAuthClient(requireContext()).create(UserService.class);
+        userService.getOrderDetail(orderId).enqueue(new Callback<Order>() {
+            @Override
+            public void onResponse(Call<Order> call, Response<Order> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    bindOrderToViews(response.body());
                 }
-            });
-        }
+            }
 
-        // Continue Shopping -> cũng về HomeActivity
-        if (buttonContinueShopping != null) {
-            buttonContinueShopping.setOnClickListener(v -> {
-                if (getActivity() != null) {
-                    Intent intent = new Intent(getActivity(), com.example.fe.ui.home.HomeActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                    startActivity(intent);
-                }
-            });
-        }
+            @Override
+            public void onFailure(Call<Order> call, Throwable t) {
+                Toast.makeText(getContext(), "Lỗi tải chi tiết đơn hàng", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
-    // Tải dữ liệu giả
-    private void loadOrderData() {
-        tvOrderNumber.setText("Order number: #" + orderId);
+    private void bindOrderToViews(Order order) {
+        tvOrderNumber.setText("Order number: #" + order.getOrderCode());
+        tvAddress.setText(order.getShippingAddress());
 
         productList.clear();
-        if ("Delivered".equals(orderStatus)) {
-            tvTrackingNumber.setText("Tracking Number: IK987362341");
-            tvAddress.setText("Delivery address: SBI Building, Software Park");
-            productList.add(new ProductItem("Maxi Dress", 1, 68.00));
-            productList.add(new ProductItem("Linen Dress", 1, 52.00));
-        } else {
-            tvTrackingNumber.setText("Tracking Number: IK287368838");
-            tvAddress.setText("Delivery address: SBI Building, Software Park");
-            productList.add(new ProductItem("Sportwear Set", 1, 80.00));
-            productList.add(new ProductItem("Cotton T-shirt", 1, 30.00));
+        if (order.getItems() != null) {
+            for (OrderItem item : order.getItems()) {
+                productList.add(new ProductItem(item.getName(), item.getQuantity(), item.getPrice()));
+            }
         }
         productAdapter.notifyDataSetChanged();
 
-        // TODO: Cập nhật Subtotal, Shipping, Total...
+        tvTotal.setText(String.format(Locale.US, "$%.2f", order.getTotalAmount()));
+
+        orderStatus = order.getStatus();
+        updateUiBasedOnStatus();
     }
 }
