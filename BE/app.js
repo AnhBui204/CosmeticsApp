@@ -6,6 +6,7 @@ import mongoose from 'mongoose';
 // --- Import tất cả các file routes ---
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import revenueRoutes from './routes/revenueRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
@@ -33,6 +34,7 @@ app.use(express.urlencoded({ extended: true, limit: '20mb' })); // support URL-e
 // Đây chính là phần bạn yêu cầu
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/revenue', revenueRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/cart', cartRoutes);

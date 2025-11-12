@@ -30,4 +30,10 @@
     <color name="black_01">#3E4554</color>
     <color name="black_02">#616A7D</color>
     <color name="black_05">#F8F9FB</color>
+
+    <color name="colorBackground">#FFF2EF</color>
+    <color name="colorCardSecondary">#FFDBB6</color>
+    <color name="colorAccent">#EC8484</color>
+    <color name="text_primary">#333333</color>
+    <color name="text_secondary">#777777</color>
 </resources>

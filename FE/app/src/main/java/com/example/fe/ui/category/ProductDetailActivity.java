@@ -1,8 +1,8 @@
 package com.example.fe.ui.category;
 
 
-
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -14,15 +14,35 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.example.fe.R;
-import com.example.fe.ui.favorite.FavoriteActivity;
 import com.example.fe.network.ApiClient;
 import com.example.fe.network.ApiService;
+import com.example.fe.network.AddItemRequest;
+import com.example.fe.network.AddToWishlistRequest;
 import com.example.fe.models.Product;
+import com.example.fe.utils.SessionManager;
+import com.example.fe.ui.cart.CartStore;
+import com.example.fe.ui.cart.CustomerCheckoutActivity;
+import com.example.fe.ui.home.ProductModel;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 public class ProductDetailActivity extends AppCompatActivity {
+
+    // active product fields used for "Buy now"
+    private String activeImageUrl;
+    private double activeUnitPrice = 0.0;
+    private int activeImageRes = R.drawable.ic_image_placeholder;
+    private String activeName;
+    private String activeProductId;
+
+    private ImageButton btnFav;
+    private boolean isFavorited = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,7 +56,8 @@ public class ProductDetailActivity extends AppCompatActivity {
         });
 
         ImageButton btnBack = findViewById(R.id.btnBack);
-        ImageButton btnFav  = findViewById(R.id.btnFav);
+        btnFav = findViewById(R.id.btnFav);
+
         ImageView img       = findViewById(R.id.imgProduct);
         TextView tvName     = findViewById(R.id.tvName);
         TextView tvPrice    = findViewById(R.id.tvPrice);
@@ -51,6 +72,16 @@ public class ProductDetailActivity extends AppCompatActivity {
         String imageUrl = getIntent().getStringExtra("imageUrl");
         int imageRes = getIntent().getIntExtra("imageResId", R.drawable.ic_image_placeholder);
 
+        // initialize active fields from intent as fallback
+        activeImageUrl = imageUrl;
+        activeImageRes = imageRes;
+        activeName = name;
+        activeProductId = productId;
+        activeUnitPrice = parsePriceString(price);
+
+        // set default heart visual
+        setFavSelected(false);
+
         if (productId != null && !productId.isEmpty()) {
             // load product detail from API
             ApiService api = ApiClient.getClient().create(ApiService.class);
@@ -60,13 +91,24 @@ public class ProductDetailActivity extends AppCompatActivity {
                     if (response.isSuccessful() && response.body() != null) {
                         Product p = response.body();
                         tvName.setText(p.getName() != null ? p.getName() : "Product");
-                        tvPrice.setText(p.getPrice() >= 0 ? String.format("$%.2f", p.getPrice()) : "$0");
+                        tvPrice.setText(p.getPrice() >= 0 ? String.format(Locale.US, "$%.2f", p.getPrice()) : "$0");
                         String imgUrl = (p.getImages() != null && !p.getImages().isEmpty()) ? p.getImages().get(0) : null;
                         if (imgUrl != null && !imgUrl.isEmpty()) {
                             Glide.with(ProductDetailActivity.this).load(imgUrl).placeholder(R.drawable.ic_image_placeholder).error(R.drawable.ic_image_placeholder).into(img);
                         } else {
                             img.setImageResource(imageRes);
                         }
+
+                        // update active fields from fetched product
+                        activeName = p.getName() != null ? p.getName() : activeName;
+                        activeProductId = p.getId() != null ? p.getId() : activeProductId;
+                        activeImageUrl = imgUrl != null ? imgUrl : activeImageUrl;
+                        activeImageRes = imageRes;
+                        activeUnitPrice = p.getSalePrice() != null ? p.getSalePrice() : p.getPrice();
+
+                        // now check wishlist status
+                        checkFavoriteState(activeProductId);
+
                     } else {
                         // fallback to intent data
                         tvName.setText(name != null ? name : "Product");
@@ -76,6 +118,8 @@ public class ProductDetailActivity extends AppCompatActivity {
                         } else {
                             img.setImageResource(imageRes);
                         }
+                        // still check wishlist with fallback id
+                        checkFavoriteState(activeProductId);
                     }
                 }
 
@@ -89,6 +133,7 @@ public class ProductDetailActivity extends AppCompatActivity {
                     } else {
                         img.setImageResource(imageRes);
                     }
+                    checkFavoriteState(activeProductId);
                 }
             });
         } else {
@@ -100,6 +145,7 @@ public class ProductDetailActivity extends AppCompatActivity {
             } else {
                 img.setImageResource(imageRes);
             }
+            checkFavoriteState(activeProductId);
         }
 
         tvDetails.setText("Praesent commodo cursus magna, vel scelerisque nisl consectetur. " +
@@ -108,14 +154,169 @@ public class ProductDetailActivity extends AppCompatActivity {
         btnBack.setOnClickListener(v -> finish());
 
         btnFav.setOnClickListener(v -> {
-            v.setSelected(!v.isSelected());
-            Toast.makeText(this, v.isSelected() ? "Added to wishlist" : "Removed from wishlist", Toast.LENGTH_SHORT).show();
+            // toggle wishlist
+            SessionManager session = new SessionManager(ProductDetailActivity.this);
+            com.example.fe.data.UserData user = session.getUser();
+            if (user == null || user.getId() == null) {
+                Toast.makeText(ProductDetailActivity.this, "Vui lòng đăng nhập để quản lý yêu thích", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            btnFav.setEnabled(false);
+            ApiService api = ApiClient.getClient(ProductDetailActivity.this).create(ApiService.class);
+            if (!isFavorited) {
+                // add
+                AddToWishlistRequest req = new AddToWishlistRequest(activeProductId);
+                api.addToWishlist(user.getId(), req).enqueue(new Callback<List<Product>>() {
+                    @Override
+                    public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
+                        btnFav.setEnabled(true);
+                        if (response.isSuccessful()) {
+                            isFavorited = true;
+                            setFavSelected(true);
+                            Toast.makeText(ProductDetailActivity.this, "Đã thêm vào yêu thích", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(ProductDetailActivity.this, "Thêm yêu thích thất bại", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<Product>> call, Throwable t) {
+                        btnFav.setEnabled(true);
+                        Toast.makeText(ProductDetailActivity.this, "Lỗi mạng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } else {
+                // remove
+                api.removeFromWishlist(user.getId(), activeProductId).enqueue(new Callback<List<Product>>() {
+                    @Override
+                    public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
+                        btnFav.setEnabled(true);
+                        if (response.isSuccessful()) {
+                            isFavorited = false;
+                            setFavSelected(false);
+                            Toast.makeText(ProductDetailActivity.this, "Đã xóa khỏi yêu thích", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(ProductDetailActivity.this, "Xóa yêu thích thất bại", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<Product>> call, Throwable t) {
+                        btnFav.setEnabled(true);
+                        Toast.makeText(ProductDetailActivity.this, "Lỗi mạng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
         });
 
-        btnAdd.setOnClickListener(v ->
-                Toast.makeText(this, "Added to cart", Toast.LENGTH_SHORT).show());
+        // New: add to cart network call
+        btnAdd.setOnClickListener(v -> {
+            SessionManager session = new SessionManager(ProductDetailActivity.this);
+            com.example.fe.data.UserData user = session.getUser();
+            if (user == null || user.getId() == null) {
+                Toast.makeText(ProductDetailActivity.this, "Vui lòng đăng nhập để thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-        btnBuy.setOnClickListener(v ->
-                Toast.makeText(this, "Proceed to checkout", Toast.LENGTH_SHORT).show());
+            String targetUserId = user.getId();
+            String pid = productId;
+            if (pid == null) {
+                // try to use id stored in intent extras (may be named "id")
+                pid = getIntent().getStringExtra("id");
+            }
+            if (pid == null) {
+                Toast.makeText(ProductDetailActivity.this, "Không thể xác định sản phẩm", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            v.setEnabled(false);
+            AddItemRequest req = new AddItemRequest(pid, 1);
+            ApiService api = ApiClient.getClient(ProductDetailActivity.this).create(ApiService.class);
+            api.addItemToCart(targetUserId, req).enqueue(new Callback<com.example.fe.models.Cart>() {
+                @Override
+                public void onResponse(Call<com.example.fe.models.Cart> call, Response<com.example.fe.models.Cart> response) {
+                    v.setEnabled(true);
+                    if (response.isSuccessful()) {
+                        Toast.makeText(ProductDetailActivity.this, "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(ProductDetailActivity.this, "Thêm giỏ hàng thất bại: " + response.code(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<com.example.fe.models.Cart> call, Throwable t) {
+                    v.setEnabled(true);
+                    Toast.makeText(ProductDetailActivity.this, "Lỗi mạng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+
+        btnBuy.setOnClickListener(v -> {
+            // create a one-item cart and proceed to checkout
+            List<ProductModel> items = new ArrayList<>();
+            String priceStr = String.format(Locale.US, "$%.2f", activeUnitPrice);
+            // use a lightweight dummy Category (same package) to construct ProductModel
+            com.example.fe.ui.category.Category dummy = new com.example.fe.ui.category.Category("", "", "", R.drawable.img_product_placeholder);
+            ProductModel pm = new ProductModel(activeName != null ? activeName : "Product", priceStr, activeImageUrl, activeImageRes, dummy, "", 1, activeUnitPrice);
+            pm.setId(activeProductId);
+            items.add(pm);
+            CartStore.setCartItems(items);
+            Intent intent = new Intent(ProductDetailActivity.this, CustomerCheckoutActivity.class);
+            startActivity(intent);
+        });
+    }
+
+    private double parsePriceString(String price) {
+        if (price == null) return 0.0;
+        try {
+            String cleaned = price.replaceAll("[^0-9.]", "");
+            if (cleaned.isEmpty()) return 0.0;
+            return Double.parseDouble(cleaned);
+        } catch (Exception e) {
+            return 0.0;
+        }
+    }
+
+    private void checkFavoriteState(String productId) {
+        // check if the product is in the user's wishlist
+        SessionManager session = new SessionManager(this);
+        com.example.fe.data.UserData user = session.getUser();
+        if (user == null || user.getId() == null) {
+            setFavSelected(false);
+            return;
+        }
+
+        ApiService api = ApiClient.getClient(this).create(ApiService.class);
+        api.getWishlist(user.getId()).enqueue(new Callback<List<Product>>() {
+            @Override
+            public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Product> wishlist = response.body();
+                    isFavorited = false;
+                    for (Product p : wishlist) {
+                        if (p.getId() != null && p.getId().equals(productId)) {
+                            isFavorited = true;
+                            break;
+                        }
+                    }
+                    setFavSelected(isFavorited);
+                } else {
+                    setFavSelected(false);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Product>> call, Throwable t) {
+                setFavSelected(false);
+            }
+        });
+    }
+
+    private void setFavSelected(boolean isSelected) {
+        btnFav.setSelected(isSelected);
+        btnFav.setEnabled(true);
+        btnFav.setImageResource(R.drawable.ic_heart);
+        int color = isSelected ? Color.parseColor("#DD5D79") : Color.GRAY;
+        btnFav.setColorFilter(color);
     }
 }

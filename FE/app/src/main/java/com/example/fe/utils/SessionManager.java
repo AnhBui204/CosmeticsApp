@@ -58,7 +58,9 @@ public class SessionManager {
     public String getToken() {
         return prefs.getString(KEY_TOKEN, null);
     }
-
+    public String getUserId() {
+        return prefs.getString(KEY_USER_ID, null);
+    }
     // Lấy thông tin user
     public UserData getUser() {
         UserData user = new UserData();

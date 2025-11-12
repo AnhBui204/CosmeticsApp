@@ -196,3 +196,22 @@ export const getOrderDetails = asyncHandler(async (req, res) => {
         throw new Error('Bạn không có quyền xem đơn hàng này');
     }
 });
+
+export const getOrderByCode = asyncHandler(async (req, res) => {
+    const orderCode = req.params.orderCode;
+
+    const order = await Order.findOne({ orderCode }).populate('items.productId', 'images');
+
+    if (!order) {
+        res.status(404);
+        throw new Error('Không tìm thấy đơn hàng');
+    }
+
+    // Kiểm tra user có quyền xem
+    if (order.userId.toString() !== req.user._id.toString()) {
+        res.status(403);
+        throw new Error('Bạn không có quyền xem đơn hàng này');
+    }
+
+    res.json(order);
+});

@@ -21,6 +21,8 @@ import android.widget.TextView;
 
 import com.example.fe.R;
 import com.example.fe.models.Order;
+import com.example.fe.models.OrderItem;
+import com.example.fe.models.ShippingAddress;
 import com.example.fe.ui.seller.SellerOrderDetailActivity;
 
 import java.util.ArrayList;
@@ -165,13 +167,39 @@ public class SellerOrdersFragment extends Fragment {
             // Create sample Order data
             List<Order> data = new ArrayList<>();
             for (int i = 1; i <= 8; i++) {
-                String num = "ORD" + (1000 + i);
-                String date = "2025-11-" + String.format(Locale.US, "%02d", i);
-                String cust = "Customer " + i;
-                String items = (i % 2 == 0) ? "Lipstick, Serum" : "Moisturizer";
-                String st = status.equals("ALL") ? (i % 3 == 0 ? "DELIVERED" : (i % 2 == 0 ? "PENDING" : "CANCELLED")) : status;
-                data.add(new Order(num, date, "TRK" + (2000 + i), 2, 45.0 + i, st, cust, items));
+                Order order = new Order();
+                order.setOrderCode("ORD" + (1000 + i));
+                order.setStatus(status.equals("ALL")
+                        ? (i % 3 == 0 ? "DELIVERED" : (i % 2 == 0 ? "PENDING" : "CANCELLED"))
+                        : status);
+                order.setCreatedAt("2025-11-" + String.format(Locale.US, "%02d", i));
+
+                // ShippingAddress as String
+                order.setShippingAddress("Customer " + i + " address");
+
+                // Items fake
+                List<OrderItem> items = new ArrayList<>();
+                for (int j = 1; j <= 2; j++) {
+                    OrderItem item = new OrderItem();
+                    item.setName((j % 2 == 0) ? "Lipstick" : "Serum");
+                    item.setQuantity(j);
+                    item.setPrice(20.0 + j);
+                    items.add(item);
+                }
+                order.setItems(items);
+
+                // Tổng tiền
+                double total = 0;
+                for (OrderItem it : items) {
+                    total += it.getPrice() * it.getQuantity();
+                }
+                order.setTotalAmount(total);
+
+                data.add(order);
             }
+
+            adapter = new OrdersAdapter(data);
+            recyclerView.setAdapter(adapter);
 
             adapter = new OrdersAdapter(data);
             recyclerView.setAdapter(adapter);
@@ -216,13 +244,31 @@ public class SellerOrdersFragment extends Fragment {
                 boolean matchText = true;
                 if (textFilter != null) {
                     String lower = textFilter.toLowerCase();
-                    matchText = (o.getOrderNumber()!=null && o.getOrderNumber().toLowerCase().contains(lower)) ||
-                            (o.getCustomerName()!=null && o.getCustomerName().toLowerCase().contains(lower)) ||
-                            (o.getItemsSummary()!=null && o.getItemsSummary().toLowerCase().contains(lower));
+
+                    // Order code
+                    boolean byCode = o.getOrderCode() != null && o.getOrderCode().toLowerCase().contains(lower);
+
+                    // Customer name from shippingAddress
+                    boolean byCustomer = o.getShippingAddress() != null &&
+                            o.getShippingAddress() != null &&
+                            o.getShippingAddress().toLowerCase().contains(lower);
+
+                    // Items summary: nối tên tất cả item
+                    boolean byItems = false;
+                    if (o.getItems() != null) {
+                        StringBuilder itemsSummary = new StringBuilder();
+                        for (OrderItem it : o.getItems()) {
+                            itemsSummary.append(it.getName()).append(", ");
+                        }
+                        byItems = itemsSummary.toString().toLowerCase().contains(lower);
+                    }
+
+                    matchText = byCode || byCustomer || byItems;
                 }
+
                 boolean matchDate = true;
                 if (dateFilter != null) {
-                    matchDate = dateFilter.equals(o.getDate());
+                    matchDate = dateFilter.equals(o.getCreatedAt());
                 }
                 if (matchText && matchDate) displayed.add(o);
             }
@@ -239,46 +285,62 @@ public class SellerOrdersFragment extends Fragment {
         @Override
         public void onBindViewHolder(@NonNull VH holder, int position) {
             Order o = displayed.get(position);
-            holder.tvOrderId.setText(o.getOrderNumber());
-            holder.tvOrderDate.setText(o.getDate());
-            holder.tvTrackingNumber.setText("Tracking number: " + o.getTrackingNumber());
-            holder.tvQuantity.setText("Quantity: " + o.getQuantity());
-            holder.tvSubtotal.setText(String.format(Locale.US, "Subtotal: $%.2f", o.getSubtotal()));
-            holder.tvCustomerName.setText(o.getCustomerName());
-            holder.tvOrderItems.setText(o.getItemsSummary());
-            holder.tvOrderStatus.setText(o.getStatus());
 
-            // Set status color based on order status
+            // Order code
+            holder.tvOrderId.setText(o.getOrderCode());
+
+            // Created date
+            holder.tvOrderDate.setText(o.getCreatedAt());
+
+            // Quantity tổng số sản phẩm
+            int totalQuantity = 0;
+            if (o.getItems() != null) {
+                for (OrderItem it : o.getItems()) totalQuantity += it.getQuantity();
+            }
+            final int finalQuantity = totalQuantity;
+            holder.tvQuantity.setText("Quantity: " + finalQuantity);
+
+            // Subtotal
+            holder.tvSubtotal.setText(String.format(Locale.US, "Subtotal: $%.2f", o.getTotalAmount()));
+
+            // Customer name
+            // Customer name
+            holder.tvCustomerName.setText(o.getShippingAddress() != null ? o.getShippingAddress() : "N/A");
+
+            // Items summary
+            StringBuilder itemsSummary = new StringBuilder();
+            if (o.getItems() != null) {
+                for (OrderItem it : o.getItems()) {
+                    itemsSummary.append(it.getName()).append(", ");
+                }
+                if (itemsSummary.length() > 2) itemsSummary.setLength(itemsSummary.length() - 2); // remove last ", "
+            }
+            holder.tvOrderItems.setText(itemsSummary.toString());
+
+            // Status
+            holder.tvOrderStatus.setText(o.getStatus());
             if (o.getStatus() != null) {
                 String st = o.getStatus().trim().toUpperCase();
                 int color;
                 switch (st) {
-                    case "PENDING":
-                        color = android.graphics.Color.parseColor("#CF6212");
-                        break;
-                    case "DELIVERED":
-                        color = android.graphics.Color.parseColor("#009254");
-                        break;
-                    case "CANCELLED":
-                        color = android.graphics.Color.parseColor("#C50000");
-                        break;
-                    default:
-                        color = android.graphics.Color.parseColor("#7A7A7A");
+                    case "PENDING": color = Color.parseColor("#CF6212"); break;
+                    case "DELIVERED": color = Color.parseColor("#009254"); break;
+                    case "CANCELLED": color = Color.parseColor("#C50000"); break;
+                    default: color = Color.parseColor("#7A7A7A");
                 }
                 holder.tvOrderStatus.setTextColor(color);
             }
 
             holder.btnDetails.setOnClickListener(v -> {
-                // Open SellerOrderDetailActivity with order extras
                 android.content.Context ctx = v.getContext();
                 android.content.Intent intent = new android.content.Intent(ctx, SellerOrderDetailActivity.class);
-                intent.putExtra("order_id", o.getOrderNumber());
-                intent.putExtra("order_date", o.getDate());
-                intent.putExtra("tracking", o.getTrackingNumber());
-                intent.putExtra("customer", o.getCustomerName());
+                intent.putExtra("order_id", o.getOrderCode());
+                intent.putExtra("order_date", o.getCreatedAt());
+                intent.putExtra("customer", o.getShippingAddress() != null ? o.getShippingAddress() : "N/A");
+
                 intent.putExtra("status", o.getStatus());
-                intent.putExtra("subtotal", o.getSubtotal());
-                intent.putExtra("quantity", o.getQuantity());
+                intent.putExtra("subtotal", o.getTotalAmount());
+                intent.putExtra("quantity", finalQuantity);
                 ctx.startActivity(intent);
             });
         }

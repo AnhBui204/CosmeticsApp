@@ -43,10 +43,10 @@ public class SellerProductListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.seller_product_list);
 
-    recyclerView = findViewById(R.id.recyclerSellerProducts);
-    fabAdd = findViewById(R.id.fabAddProduct);
+        recyclerView = findViewById(R.id.recyclerSellerProducts);
+        fabAdd = findViewById(R.id.fabAddProduct);
 
-    adapter = new SellerProductAdapter(this);
+        adapter = new SellerProductAdapter(this);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
 
@@ -158,7 +158,7 @@ public class SellerProductListActivity extends AppCompatActivity {
             }
         });
 
-    // initial load is handled in onResume to avoid duplicate calls when activity is recreated
+        // initial load is handled in onResume to avoid duplicate calls when activity is recreated
     }
 
     // ---- ADD BUTTON ANIMATION LOGIC ----

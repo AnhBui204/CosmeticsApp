@@ -1,7 +1,9 @@
+// Only ONE plugins block at the very top
 plugins {
     alias(libs.plugins.android.application)
 }
 
+// Only ONE android block
 android {
     namespace = "com.example.fe"
     compileSdk = 36
@@ -31,34 +33,36 @@ android {
     }
 }
 
+// Only ONE dependencies block
 dependencies {
 
+    // Core Android libs
     implementation(libs.appcompat)
-    implementation(libs.material)
-
-    implementation("com.google.android.material:material:1.10.0")
-    implementation("androidx.viewpager2:viewpager2:1.0.0")
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.3")
-    implementation("com.google.android.gms:play-services-auth:21.2.0")
-    implementation("androidx.browser:browser:1.7.0")
-    implementation(libs.appcompat)
-    implementation(libs.material)
+    implementation(libs.material) // This is "com.google.android.material:material"
     implementation(libs.activity)
     implementation(libs.constraintlayout)
+    implementation("androidx.viewpager2:viewpager2:1.0.0")
 
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.ext.junit)
-    androidTestImplementation(libs.espresso.core)
+    // Google Sign-In
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
+    implementation("androidx.browser:browser:1.7.0")
+
+    // MPAndroidChart
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
+    // Glide (for images)
     implementation("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
 
-    // Retrofit + Gson + OkHttp
+    // Retrofit + Gson + OkHttp (for networking)
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
     implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
-    // Gson (explicit) for model annotations
     implementation("com.google.code.gson:gson:2.10.1")
+
+    // Testing
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.ext.junit)
+    androidTestImplementation(libs.espresso.core)
 }

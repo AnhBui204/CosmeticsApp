@@ -1,7 +1,9 @@
 package com.example.fe.network;
 
+import com.example.fe.data.TopProductData;
 import com.example.fe.models.ProductsResponse;
 import com.example.fe.models.Category;
+import com.example.fe.data.RevenueData;
 import java.util.List;
 
 import retrofit2.Call;
@@ -39,5 +41,31 @@ public interface ApiService {
             @Query("limit") int limit,
             @Query("sort") String sort
     );
+@POST("api/cart/{userId}/items")
+    Call<com.example.fe.models.Cart> addItemToCart(@Path("userId") String userId, @Body com.example.fe.network.AddItemRequest request);
 
+    // Remove item from cart for a specific user: DELETE /api/cart/{userId}/items/{itemId}
+    @DELETE("api/cart/{userId}/items/{itemId}")
+    Call<com.example.fe.models.Cart> removeItemFromCart(@Path("userId") String userId, @Path("itemId") String itemId);
+
+    // Get cart for specific user: GET /api/cart/{userId}
+    @GET("api/cart/{userId}")
+    Call<com.example.fe.models.Cart> getCartByUser(@Path("userId") String userId);
+
+    @GET("api/revenue/seller-revenue")
+    Call<List<RevenueData>> getSellerRevenue(
+            @Query("sellerId") String id
+    );
+    @GET("api/revenue/top-selling-products")
+    Call<List<TopProductData>> getTopSellingProducts(
+            @Query("sellerId") String sellerId
+    );
+    @GET("api/users/{userId}/wishlist")
+    Call<List<com.example.fe.models.Product>> getWishlist(@Path("userId") String userId);
+
+    @POST("api/users/{userId}/wishlist")
+    Call<List<com.example.fe.models.Product>> addToWishlist(@Path("userId") String userId, @Body com.example.fe.network.AddToWishlistRequest body);
+
+    @DELETE("api/users/{userId}/wishlist/{productId}")
+    Call<List<com.example.fe.models.Product>> removeFromWishlist(@Path("userId") String userId, @Path("productId") String productId);
 }

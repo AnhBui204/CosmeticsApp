@@ -28,7 +28,7 @@ const calculateCartTotal = async (cartItems) => {
  * @access  Private
  */
 export const getCart = asyncHandler(async (req, res) => {
-    let cart = await Cart.findOne({ userId: req.user._id })
+    let cart = await Cart.findOne({ userId: req.user._id  })
         .populate({
             path: 'items.productId',
             model: 'Product',
@@ -112,6 +112,175 @@ export const addItemToCart = asyncHandler(async (req, res) => {
     res.status(200).json(cart);
 });
 
+
+
+
+
+
+
+/**
+ * @desc    Add/update item to a specific user's cart (admin or owner)
+ * @route   POST /api/cart/:userId/items
+ * @access  Private (owner or admin)
+ */
+export const addItemToCartForUser = asyncHandler(async (req, res) => {
+    const { productId, quantity } = req.body;
+    const targetUserId = req.params.userId;
+
+    // permission: either same user or admin
+    if (req.user._id.toString() !== targetUserId && req.user.role !== 'admin') {
+        res.status(403);
+        throw new Error('Không có quyền thao tác trên giỏ hàng của người dùng khác');
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(productId) || !mongoose.Types.ObjectId.isValid(targetUserId)) {
+        res.status(400);
+        throw new Error('productId hoặc userId không hợp lệ');
+    }
+
+    const numQuantity = parseInt(quantity) || 1;
+    const product = await Product.findById(productId);
+    if (!product) {
+        res.status(404);
+        throw new Error('Không tìm thấy sản phẩm');
+    }
+
+    let cart = await Cart.findOne({ userId: targetUserId });
+    if (!cart) {
+        cart = await Cart.create({ userId: targetUserId, items: [] });
+    }
+
+    const priceAtAdd = product.salePrice || product.price;
+    const itemIndex = cart.items.findIndex(item => item.productId.toString() === productId);
+
+    if (itemIndex > -1) {
+        const newQuantity = cart.items[itemIndex].quantity + numQuantity;
+        if (product.stockQuantity < newQuantity) {
+            res.status(400);
+            throw new Error('Số lượng tồn kho không đủ');
+        }
+        cart.items[itemIndex].quantity = newQuantity;
+        cart.items[itemIndex].priceAtAdd = priceAtAdd;
+    } else {
+        if (product.stockQuantity < numQuantity) {
+            res.status(400);
+            throw new Error('Số lượng tồn kho không đủ');
+        }
+        cart.items.push({ productId, quantity: numQuantity, priceAtAdd });
+    }
+
+    cart.totalAmount = await calculateCartTotal(cart.items);
+    cart.updatedAt = Date.now();
+    await cart.save();
+
+    await cart.populate({
+        path: 'items.productId',
+        model: 'Product',
+        select: 'name images price salePrice'
+    });
+
+    res.status(200).json(cart);
+});
+
+/**
+ * @desc    Remove item from a specific user's cart (admin or owner)
+ * @route   DELETE /api/cart/:userId/items/:itemId
+ * @access  Private (owner or admin)
+ */
+export const removeItemFromCartForUser = asyncHandler(async (req, res) => {
+    const { itemId, userId: targetUserId } = req.params;
+
+    // permission
+    if (req.user._id.toString() !== targetUserId && req.user.role !== 'admin') {
+        res.status(403);
+        throw new Error('Không có quyền thao tác trên giỏ hàng của người dùng khác');
+    }
+
+    const cart = await Cart.findOne({ userId: targetUserId });
+    if (!cart) {
+        res.status(404);
+        throw new Error('Không tìm thấy giỏ hàng của người dùng');
+    }
+
+    // Try subdocument id first
+    let item = cart.items.id(itemId);
+    if (!item) {
+        // Fallback: caller may have passed productId instead of itemId
+        const itemByProduct = cart.items.find(it => it.productId && it.productId.toString() === itemId);
+        if (itemByProduct) {
+            // remove by index to avoid calling subdocument.remove() on plain objects
+            cart.items = cart.items.filter(it => !(it._id && it._id.toString() === itemByProduct._id.toString()));
+            cart.totalAmount = await calculateCartTotal(cart.items);
+            await cart.save();
+
+            await cart.populate({
+                path: 'items.productId',
+                model: 'Product',
+                select: 'name images price salePrice stockQuantity'
+            });
+
+            return res.json(cart);
+        }
+
+        res.status(404);
+        throw new Error('Không tìm thấy sản phẩm trong giỏ hàng');
+    }
+
+    // remove item safely (works whether item is a mongoose subdoc or plain object)
+    if (typeof item.remove === 'function') {
+        item.remove();
+    } else {
+        cart.items = cart.items.filter(it => !(it._id && it._id.toString() === item._id.toString()));
+    }
+    cart.totalAmount = await calculateCartTotal(cart.items);
+    await cart.save();
+
+    await cart.populate({
+        path: 'items.productId',
+        model: 'Product',
+        select: 'name images price salePrice stockQuantity'
+    });
+
+    res.json(cart);
+});
+
+/**
+ * @desc    Get cart for a specific user (owner or admin)
+ * @route   GET /api/cart/:userId
+ * @access  Private (owner or admin)
+ */
+export const getCartByUser = asyncHandler(async (req, res) => {
+    const targetUserId = req.params.userId;
+
+    if (!mongoose.Types.ObjectId.isValid(targetUserId)) {
+        res.status(400);
+        throw new Error('userId không hợp lệ');
+    }
+
+    // permission: owner or admin
+    if (req.user._id.toString() !== targetUserId && req.user.role !== 'admin') {
+        res.status(403);
+        throw new Error('Không có quyền truy cập giỏ hàng của người dùng khác');
+    }
+
+    let cart = await Cart.findOne({ userId: targetUserId })
+        .populate({
+            path: 'items.productId',
+            model: 'Product',
+            select: 'name images price salePrice stockQuantity'
+        });
+
+    if (!cart) {
+        cart = await Cart.create({ userId: targetUserId, items: [] });
+    }
+
+    // Recalculate total for display (don't save)
+    cart.totalAmount = await calculateCartTotal(cart.items);
+
+    res.json(cart);
+});
+
+
 /**
  * @desc    Cập nhật số lượng (thay đổi trực tiếp)
  * @route   PUT /api/cart/items/:itemId
@@ -167,16 +336,40 @@ export const removeItemFromCart = asyncHandler(async (req, res) => {
     const userId = req.user._id;
     
     const cart = await Cart.findOne({ userId: userId });
-    
-    const item = cart.items.id(itemId);
-    if (!item) {
+    if (!cart) {
          res.status(404);
-         throw new Error('Không tìm thấy sản phẩm trong giỏ hàng');
+         throw new Error('Không tìm thấy giỏ hàng');
+    }
+
+    // Try locate by subdocument id first
+    let item = cart.items.id(itemId);
+    if (!item) {
+        // Fallback: maybe caller passed productId instead of itemId — try find by productId
+        const itemByProduct = cart.items.find(it => it.productId && it.productId.toString() === itemId);
+        if (itemByProduct) {
+                // safe remove by index
+                cart.items = cart.items.filter(it => !(it._id && it._id.toString() === itemByProduct._id.toString()));
+            cart.totalAmount = await calculateCartTotal(cart.items);
+            await cart.save();
+            await cart.populate({
+                path: 'items.productId',
+                model: 'Product',
+                select: 'name images price salePrice stockQuantity'
+            });
+            return res.json(cart);
+        }
+
+        res.status(404);
+        throw new Error('Không tìm thấy sản phẩm trong giỏ hàng');
     }
     
-    // Xóa item khỏi mảng
-    item.remove();
-    
+    // Xóa item khỏi mảng (safe)
+    if (typeof item.remove === 'function') {
+        item.remove();
+    } else {
+        cart.items = cart.items.filter(it => !(it._id && it._id.toString() === item._id.toString()));
+    }
+
     cart.totalAmount = await calculateCartTotal(cart.items);
     await cart.save();
     
@@ -188,3 +381,4 @@ export const removeItemFromCart = asyncHandler(async (req, res) => {
 
     res.json(cart);
 });
+

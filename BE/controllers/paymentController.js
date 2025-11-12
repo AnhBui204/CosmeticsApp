@@ -1,6 +1,3 @@
-
-
-// controllers/PaymentController.js
 import mongoose from "mongoose";
 import crypto from "crypto";
 import axios from "axios";
@@ -14,14 +11,30 @@ export const createOrder = async (req, res) => {
   try {
     const { userId, shippingAddress, paymentMethod, voucherCode } = req.body;
 
-    if (!userId || !shippingAddress || !paymentMethod) {
-      return res.status(400).json({ message: "Missing required fields" });
+    // check for missing fields
+    const missingFields = [];
+    if (!userId) missingFields.push("userId");
+    if (!shippingAddress) missingFields.push("shippingAddress");
+    if (!paymentMethod) missingFields.push("paymentMethod");
+
+    if (missingFields.length > 0) {
+      console.warn("Missing required fields:", missingFields);
+      return res.status(400).json({
+        message: "Missing required fields",
+        missingFields,
+      });
     }
 
     // Lấy cart của user
     const cart = await Cart.findOne({ userId }).populate("items.productId");
     if (!cart || cart.items.length === 0) {
       return res.status(400).json({ message: "Cart is empty" });
+    }
+
+    // if that cart exists, get first sellerId from cart items
+    const firstSellerId = cart.items[0]?.productId?.sellerId;
+    if (!firstSellerId) {
+      return res.status(400).json({ message: "Cart items missing sellerId" });
     }
 
     // Tính tổng tiền
@@ -31,17 +44,19 @@ export const createOrder = async (req, res) => {
     );
 
     // Tạo orderCode
-  const orderCode = Math.floor(Date.now() / 1000);
+    const orderCode = Math.floor(Date.now() / 1000);
 
     // Tạo Order record với status Pending
     const newOrder = await Order.create({
       orderCode,
       userId,
+      sellerId: firstSellerId,
       items: cart.items.map((i) => ({
         productId: i.productId._id,
         name: i.productId.name,
         price: i.priceAtAdd,
         quantity: i.quantity,
+        sellerId: i.productId.sellerId
       })),
       totalAmount,
       shippingAddress,
@@ -49,7 +64,7 @@ export const createOrder = async (req, res) => {
       voucherCode,
       status: "pending",
     });
-
+    const payosAmount = 2000;
     // Tạo payload cho PayOS
     const useSandbox = process.env.PAYOS_USE_SANDBOX === "true";
     const PAYOS_API = useSandbox ? PAYOS_SANDBOX_API : PAYOS_PROD_API;
@@ -57,7 +72,7 @@ export const createOrder = async (req, res) => {
     const returnUrl = `${process.env.PAYOS_RETURN_URL}&orderCode=${orderCode}`;
     const cancelUrl = `${process.env.PAYOS_CANCEL_URL}&orderCode=${orderCode}`;
 
-    const rawSignature = `amount=${totalAmount}&cancelUrl=${cancelUrl}&description=Order ${orderCode}&orderCode=${orderCode}&returnUrl=${returnUrl}`;
+    const rawSignature = `amount=${payosAmount}&cancelUrl=${cancelUrl}&description=Order ${orderCode}&orderCode=${orderCode}&returnUrl=${returnUrl}`;
     const signature = crypto
       .createHmac("sha256", process.env.PAYOS_CHECKSUM_KEY)
       .update(rawSignature)
@@ -65,7 +80,7 @@ export const createOrder = async (req, res) => {
 
     const payload = {
       orderCode,
-      amount: totalAmount,
+      amount: payosAmount,
       description: `Order ${orderCode}`,
       cancelUrl,
       returnUrl,
@@ -95,37 +110,51 @@ export const createOrder = async (req, res) => {
   }
 };
 
-
 /** Webhook PayOS */
-const orders = {}; // { orderCode: status }
 
-export const handleWebhook = (req, res) => {
+export const handleWebhook = async (req, res) => {
   try {
     const payload = req.body;
-    const { orderCode, status } = payload;
+    const data = payload.data || {};
+    const orderCode = data.orderCode;
+    const status = payload.success ? "paid" : "failed"; // lowercase cho nhất quán
 
-    // Chỉ log ra console để test
-    console.log('Received PayOS webhook:');
-    console.log('Order code:', orderCode);
-    console.log('Payment status:', status);
+    if (orderCode) {
+      // Map status vào DB
+      let newStatus;
+      switch (status) {
+        case "paid":
+          newStatus = "processing";
+          break;
+        case "failed":
+        case "cancelled":
+          newStatus = "cancelled";
+          break;
+        default:
+          newStatus = "pending";
+      }
 
-    // Lưu tạm trạng thái order
-    orders[orderCode] = status;
+      // Update trực tiếp trong DB
+      await Order.findOneAndUpdate(
+        { orderCode },
+        { status: newStatus },
+        { new: true }
+      );
 
-    // Dùng để test: in ra tất cả orders hiện tại
-    console.log('All orders in memory:', orders);
+      console.log(`Order ${orderCode} updated to ${newStatus}`);
+    }
 
-    // Trả về OK cho PayOS
     res.status(200).send('OK');
   } catch (error) {
     console.error('Webhook error:', error);
     res.status(500).send('Server error');
   }
 };
+
 export const updateOrderStatus = async (req, res) => {
   try {
     const { orderCode, status } = req.body;
-  console.log("updateOrderStatus body:", req.body);
+    console.log("updateOrderStatus body:", req.body);
     if (!orderCode || !status) {
       return res.status(400).json({ message: "Missing orderCode or status" });
     }
@@ -133,12 +162,14 @@ export const updateOrderStatus = async (req, res) => {
     // Map status FE -> DB status
     let newStatus;
     switch (status.toLowerCase()) {
-      case "success":
-        newStatus = "processing"; // hoặc "paid" tuỳ workflow của bạn
+      case "paid":
+        newStatus = "processing";
         break;
       case "cancelled":
         newStatus = "cancelled";
         break;
+      case "failed":
+        newStatus = "cancelled"
       default:
         return res.status(400).json({ message: "Invalid status value" });
     }
