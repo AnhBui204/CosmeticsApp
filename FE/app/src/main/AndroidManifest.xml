@@ -35,6 +35,8 @@
         <activity android:name=".ui.seller.SellerOrderDetailActivity"/>
         <activity android:name=".ui.seller.SellerProductListActivity"/>
         <activity android:name=".ui.seller.ProductEditActivity"/>
+        <activity android:name=".ui.voucher.AddVoucherActivity"/>
+
         <activity android:name=".IntroActivity"/>
 
         <activity android:name=".ui.auth.login.LoginActivity"/>

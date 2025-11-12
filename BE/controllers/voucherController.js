@@ -3,17 +3,34 @@ import { Voucher } from '../models/voucherModel.js';
 import { Cart } from '../models/cartModel.js';
 
 /**
+ * Helpers
+ */
+const calculateDiscount = (voucher, subTotal) => {
+    let discountAmount = 0;
+    if (voucher.discountType === 'fixed_amount') {
+        discountAmount = voucher.discountValue;
+    } else if (voucher.discountType === 'percentage') {
+        discountAmount = (subTotal * voucher.discountValue) / 100;
+        if (voucher.maxDiscountAmount && discountAmount > voucher.maxDiscountAmount) {
+            discountAmount = voucher.maxDiscountAmount;
+        }
+    }
+    return discountAmount;
+};
+
+/**
  * @desc    Lấy danh sách voucher có thể sử dụng
  * @route   GET /api/vouchers/available
  * @access  Private
  */
 export const getAvailableVouchers = asyncHandler(async (req, res) => {
     // Lấy các voucher còn hoạt động, còn hạn, còn lượt dùng
+    const now = new Date();
     const vouchers = await Voucher.find({
         isActive: true,
-        validTo: { $gte: Date.now() },
+        endDate: { $gte: now },
         usageLimit: { $gt: 0 }
-    }).sort({ validFrom: 1 }); // Sắp xếp theo ngày bắt đầu
+    }).sort({ startDate: 1 }); // Sắp xếp theo ngày bắt đầu
 
     res.json(vouchers);
 });
@@ -33,10 +50,11 @@ export const applyVoucherToCart = asyncHandler(async (req, res) => {
     }
 
     // 1. Lấy voucher
+    const now = new Date();
     const voucher = await Voucher.findOne({
         code: code.toUpperCase(),
         isActive: true,
-        validTo: { $gte: Date.now() },
+        endDate: { $gte: now },
         usageLimit: { $gt: 0 }
     });
 
@@ -63,23 +81,146 @@ export const applyVoucherToCart = asyncHandler(async (req, res) => {
     }
 
     // 4. Tính toán
-    let discountAmount = 0;
-    if (voucher.discountType === 'fixed_amount') {
-        discountAmount = voucher.discountValue;
-    } else if (voucher.discountType === 'percentage') {
-        discountAmount = (subTotal * voucher.discountValue) / 100;
-        if (voucher.maxDiscountAmount && discountAmount > voucher.maxDiscountAmount) {
-            discountAmount = voucher.maxDiscountAmount;
-        }
-    }
-    
+    const discountAmount = calculateDiscount(voucher, subTotal);
     const finalTotal = subTotal - discountAmount;
 
     res.json({
         success: true,
         code: voucher.code,
-        discountAmount: discountAmount,
-        subTotal: subTotal,
+        discountAmount,
+        subTotal,
         finalTotal: finalTotal < 0 ? 0 : finalTotal
     });
+});
+
+/**
+ *  Seller CRUD
+ */
+// Create voucher
+export const createVoucher = asyncHandler(async (req, res) => {
+    const data = req.body;
+
+    if (!data.code) {
+        res.status(400);
+        throw new Error('Mã voucher (code) là bắt buộc');
+    }
+
+    // Normalize
+    data.code = data.code.toUpperCase();
+
+    const exists = await Voucher.findOne({ code: data.code });
+    if (exists) {
+        res.status(400);
+        throw new Error('Mã voucher đã tồn tại');
+    }
+
+    // Validate required fields early to provide clear errors instead of Mongoose ValidationError
+    const allowedTypes = ['percentage', 'fixed_amount'];
+    if (!data.discountType || !allowedTypes.includes(data.discountType)) {
+        res.status(400);
+        throw new Error('discountType là bắt buộc và phải là một trong: percentage, fixed_amount');
+    }
+
+    if (typeof data.discountValue === 'undefined' || isNaN(Number(data.discountValue))) {
+        res.status(400);
+        throw new Error('discountValue là bắt buộc và phải là một số');
+    }
+
+    const voucher = await Voucher.create({
+        code: data.code,
+        title: data.title || '',
+        description: data.description || '',
+        discountType: data.discountType,
+        discountValue: data.discountValue,
+        maxDiscountAmount: data.maxDiscountAmount,
+        minOrderAmount: data.minOrderAmount || 0,
+        usageLimit: data.usageLimit || 1,
+        startDate: data.startDate ? new Date(data.startDate) : new Date(),
+        endDate: data.endDate ? new Date(data.endDate) : new Date(),
+        isActive: typeof data.isActive === 'boolean' ? data.isActive : true
+    });
+
+    res.status(201).json(voucher);
+});
+
+// Get all vouchers (with optional query: active only, pagination)
+export const getVouchers = asyncHandler(async (req, res) => {
+    const { page = 1, limit = 50, active } = req.query;
+    const query = {};
+    if (typeof active !== 'undefined') {
+        query.isActive = active === 'true';
+    }
+
+    const skip = (Number(page) - 1) * Number(limit);
+    const total = await Voucher.countDocuments(query);
+    const vouchers = await Voucher.find(query).sort({ startDate: -1 }).skip(skip).limit(Number(limit));
+
+    res.json({ total, page: Number(page), limit: Number(limit), data: vouchers });
+});
+
+// Get single voucher
+export const getVoucherById = asyncHandler(async (req, res) => {
+    const voucher = await Voucher.findById(req.params.id);
+    if (!voucher) {
+        res.status(404);
+        throw new Error('Không tìm thấy voucher');
+    }
+    res.json(voucher);
+});
+
+// Update voucher
+export const updateVoucher = asyncHandler(async (req, res) => {
+    const voucher = await Voucher.findById(req.params.id);
+    if (!voucher) {
+        res.status(404);
+        throw new Error('Không tìm thấy voucher để cập nhật');
+    }
+
+    const data = req.body;
+    const allowedTypes = ['percentage', 'fixed_amount'];
+    if (data.code) voucher.code = data.code.toUpperCase();
+    if (typeof data.title !== 'undefined') voucher.title = data.title;
+    if (typeof data.description !== 'undefined') voucher.description = data.description;
+    if (typeof data.discountType !== 'undefined') {
+        if (!allowedTypes.includes(data.discountType)) {
+            res.status(400);
+            throw new Error('discountType phải là một trong: percentage, fixed_amount');
+        }
+        voucher.discountType = data.discountType;
+    }
+
+    if (typeof data.discountValue !== 'undefined') {
+        if (isNaN(Number(data.discountValue))) {
+            res.status(400);
+            throw new Error('discountValue phải là một số hợp lệ');
+        }
+        voucher.discountValue = data.discountValue;
+    }
+    if (typeof data.maxDiscountAmount !== 'undefined') voucher.maxDiscountAmount = data.maxDiscountAmount;
+    if (typeof data.minOrderAmount !== 'undefined') voucher.minOrderAmount = data.minOrderAmount;
+    if (typeof data.usageLimit !== 'undefined') voucher.usageLimit = data.usageLimit;
+    if (typeof data.startDate !== 'undefined') voucher.startDate = new Date(data.startDate);
+    if (typeof data.endDate !== 'undefined') voucher.endDate = new Date(data.endDate);
+    if (typeof data.isActive !== 'undefined') voucher.isActive = data.isActive;
+
+    const updated = await voucher.save();
+    res.json(updated);
+});
+
+// Delete voucher
+export const deleteVoucher = asyncHandler(async (req, res) => {
+    const voucher = await Voucher.findById(req.params.id);
+    if (!voucher) {
+        res.status(404);
+        throw new Error('Không tìm thấy voucher để xóa');
+    }
+
+    // Use model-level deletion to avoid calling instance.remove() which may not exist
+    const deleted = await Voucher.findByIdAndDelete(req.params.id);
+    if (!deleted) {
+        res.status(404);
+        throw new Error('Không tìm thấy voucher để xóa');
+    }
+
+    res.json({ success: true, message: 'Voucher đã được xóa' });
 });

@@ -15,10 +15,12 @@
         android:id="@+id/navigation_seller_products"
         android:icon="@drawable/ic_products"
         android:title="Products" />
-
+    <item
+        android:id="@+id/navigation_seller_vouchers"
+        android:icon="@drawable/ic_vouchers"
+        android:title="Vouchers" />
     <item
         android:id="@+id/navigation_seller_account"
         android:icon="@drawable/ic_profile"
         android:title="Profile" />
-
 </menu>
