@@ -140,6 +140,7 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
+                <!-- RecyclerView danh sách sản phẩm -->
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recycler_view_products"
                     android:layout_width="match_parent"
@@ -147,23 +148,39 @@
                     tools:listitem="@layout/item_order_product"
                     tools:itemCount="2" />
 
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEE" android:layout_marginTop="16dp" android:layout_marginBottom="16dp"/>
+                <View android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#EEE"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="16dp"/>
 
-                <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Sub Total"/>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="120.00" android:layout_alignParentEnd="true" android:textColor="@android:color/black"/>
-                </RelativeLayout>
-                <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Shipping"/>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.00" android:layout_alignParentEnd="true" android:textColor="@android:color/black"/>
-                </RelativeLayout>
-                <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Total" android:textStyle="bold" android:textColor="@android:color/black" android:textSize="16sp"/>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="$120.00" android:layout_alignParentEnd="true" android:textColor="@android:color/black" android:textStyle="bold" android:textSize="16sp"/>
-                </RelativeLayout>
+                <!-- Chỉ hiển thị Total -->
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp">
 
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Total"
+                        android:textStyle="bold"
+                        android:textColor="@android:color/black"
+                        android:textSize="16sp"/>
+
+                    <TextView
+                        android:id="@+id/tv_total_amount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="$0.00"
+                        android:layout_alignParentEnd="true"
+                        android:textColor="@android:color/black"
+                        android:textStyle="bold"
+                        android:textSize="16sp"/>
+                </RelativeLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
+
 
     </LinearLayout>
     </androidx.core.widget.NestedScrollView>
