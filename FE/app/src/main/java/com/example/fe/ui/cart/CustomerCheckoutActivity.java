@@ -87,9 +87,18 @@ public class CustomerCheckoutActivity extends AppCompatActivity {
     private void createPayOSOrder(UserData currentUser, List<ProductModel> items, double totalAmount) {
         new Thread(() -> {
             try {
-                URL url = new URL("https://leisureless-yasmin-inappreciatively.ngrok-free.dev/api/payment/create-order");
+                SessionManager session = new SessionManager(this);
+                String token = session.getToken(); // retrieve JWT stored during login
+
+                // Luan
+//                URL url = new URL("https://leisureless-yasmin-inappreciatively.ngrok-free.dev/api/payment/create-order");
+
+                // nauQ
+                URL url = new URL("https://apneal-unforwardly-emmie.ngrok-free.dev/api/payment/create-order");
+
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
+                conn.setRequestProperty("Authorization", "Bearer " + token);
                 conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
                 conn.setDoOutput(true);
 
@@ -129,8 +138,18 @@ public class CustomerCheckoutActivity extends AppCompatActivity {
 
                     runOnUiThread(() -> openPaymentUrl(checkoutUrl));
                 } else {
+                    // read error stream to get backend message (if any)
+                    StringBuilder errorResp = new StringBuilder();
+                    try (BufferedReader err = new BufferedReader(new InputStreamReader(conn.getErrorStream()))) {
+                        String l;
+                        while (err != null && (l = err.readLine()) != null) errorResp.append(l);
+                    } catch (Exception ignore) {}
+
+                    final String serverMessage = errorResp.length() > 0 ? errorResp.toString() : "Tạo đơn PayOS thất bại";
+                    final int code = responseCode;
+                    System.out.println("createPayOSOrder failed: code=" + code + ", body=" + serverMessage);
                     runOnUiThread(() ->
-                            Toast.makeText(this, "Tạo đơn PayOS thất bại", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, "Tạo đơn PayOS thất bại: (" + code + ") " + serverMessage, Toast.LENGTH_LONG).show()
                     );
                 }
                 conn.disconnect();

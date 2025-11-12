@@ -1,6 +1,3 @@
-
-
-// controllers/PaymentController.js
 import mongoose from "mongoose";
 import crypto from "crypto";
 import axios from "axios";
@@ -14,14 +11,30 @@ export const createOrder = async (req, res) => {
   try {
     const { userId, shippingAddress, paymentMethod, voucherCode } = req.body;
 
-    if (!userId || !shippingAddress || !paymentMethod) {
-      return res.status(400).json({ message: "Missing required fields" });
+    // check for missing fields
+    const missingFields = [];
+    if (!userId) missingFields.push("userId");
+    if (!shippingAddress) missingFields.push("shippingAddress");
+    if (!paymentMethod) missingFields.push("paymentMethod");
+
+    if (missingFields.length > 0) {
+      console.warn("Missing required fields:", missingFields);
+      return res.status(400).json({
+        message: "Missing required fields",
+        missingFields,
+      });
     }
 
     // Lấy cart của user
     const cart = await Cart.findOne({ userId }).populate("items.productId");
     if (!cart || cart.items.length === 0) {
       return res.status(400).json({ message: "Cart is empty" });
+    }
+
+    // if that cart exists, get first sellerId from cart items
+    const firstSellerId = cart.items[0]?.productId?.sellerId;
+    if (!firstSellerId) {
+      return res.status(400).json({ message: "Cart items missing sellerId" });
     }
 
     // Tính tổng tiền
@@ -31,18 +44,19 @@ export const createOrder = async (req, res) => {
     );
 
     // Tạo orderCode
-  const orderCode = Math.floor(Date.now() / 1000);
+    const orderCode = Math.floor(Date.now() / 1000);
 
     // Tạo Order record với status Pending
     const newOrder = await Order.create({
       orderCode,
       userId,
+      sellerId: firstSellerId,
       items: cart.items.map((i) => ({
         productId: i.productId._id,
         name: i.productId.name,
         price: i.priceAtAdd,
         quantity: i.quantity,
-        sellerId:i.productId.sellerId
+        sellerId: i.productId.sellerId
       })),
       totalAmount,
       shippingAddress,
@@ -50,7 +64,7 @@ export const createOrder = async (req, res) => {
       voucherCode,
       status: "pending",
     });
-const payosAmount = 2000;
+    const payosAmount = 2000;
     // Tạo payload cho PayOS
     const useSandbox = process.env.PAYOS_USE_SANDBOX === "true";
     const PAYOS_API = useSandbox ? PAYOS_SANDBOX_API : PAYOS_PROD_API;
@@ -96,9 +110,7 @@ const payosAmount = 2000;
   }
 };
 
-
 /** Webhook PayOS */
-
 
 export const handleWebhook = async (req, res) => {
   try {
@@ -142,7 +154,7 @@ export const handleWebhook = async (req, res) => {
 export const updateOrderStatus = async (req, res) => {
   try {
     const { orderCode, status } = req.body;
-  console.log("updateOrderStatus body:", req.body);
+    console.log("updateOrderStatus body:", req.body);
     if (!orderCode || !status) {
       return res.status(400).json({ message: "Missing orderCode or status" });
     }
@@ -151,13 +163,13 @@ export const updateOrderStatus = async (req, res) => {
     let newStatus;
     switch (status.toLowerCase()) {
       case "paid":
-        newStatus = "processing"; 
+        newStatus = "processing";
         break;
       case "cancelled":
         newStatus = "cancelled";
         break;
-        case"failed":
-      newStatus = "cancelled"
+      case "failed":
+        newStatus = "cancelled"
       default:
         return res.status(400).json({ message: "Invalid status value" });
     }
