@@ -1,9 +1,12 @@
 package com.example.fe;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -11,20 +14,26 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.fe.api.ApiClient;
+import com.example.fe.api.UserService;
 import com.example.fe.models.Order;
+import com.example.fe.utils.SessionManager;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class OrderListFragment extends Fragment {
 
     private static final String ARG_STATUS = "order_status";
     private String orderStatus;
     private RecyclerView recyclerView;
+    private ProgressBar progressBar;
     private OrderAdapter orderAdapter;
-    private List<Order> orderList;
 
-    // Phương thức factory để tạo instance mới của fragment với tham số
     public static OrderListFragment newInstance(String status) {
         OrderListFragment fragment = new OrderListFragment();
         Bundle args = new Bundle();
@@ -43,39 +52,78 @@ public class OrderListFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+
         View view = inflater.inflate(R.layout.fragment_order_list, container, false);
 
         recyclerView = view.findViewById(R.id.recycler_view_orders);
+        progressBar = view.findViewById(R.id.progress_bar);
+
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        // Khởi tạo danh sách và adapter
-        orderList = new ArrayList<>();
-        orderAdapter = new OrderAdapter(orderList, getContext());
-        recyclerView.setAdapter(orderAdapter);
-
-        // Tải dữ liệu (ở đây dùng dữ liệu giả)
-        loadDummyData(orderStatus);
+        fetchOrdersFromAPI();
 
         return view;
     }
 
-    // Phương thức tải dữ liệu giả dựa trên status
-    private void loadDummyData(String status) {
-        orderList.clear();
-        if ("Pending".equals(status)) {
-            orderList.add(new Order("1524", "13/05/2021", "IK287368838", 2, 110.0, "Pending"));
-            orderList.add(new Order("1524", "12/05/2021", "IK2873218897", 3, 230.0, "Pending"));
-            orderList.add(new Order("1524", "10/05/2021", "IK237368820", 5, 490.0, "Pending"));
-        } else if ("Delivered".equals(status)) {
-            orderList.add(new Order("1514", "13/05/2021", "IK987362341", 2, 110.0, "Delivered"));
-            orderList.add(new Order("1679", "12/05/2021", "IK3873218890", 3, 450.0, "Delivered"));
-            orderList.add(new Order("1671", "10/05/2021", "IK237368881", 3, 400.0, "Delivered"));
-        } else if ("Cancelled".equals(status)) {
-            orderList.add(new Order("1829", "10/05/2021", "IK287368831", 2, 210.0, "Cancelled"));
-            orderList.add(new Order("1824", "10/05/2021", "IK2882918812", 3, 120.0, "Cancelled"));
-        }
-        orderAdapter.notifyDataSetChanged();
+    private void fetchOrdersFromAPI() {
+        progressBar.setVisibility(View.VISIBLE);
+
+        SessionManager sessionManager = new SessionManager(requireContext());
+        String userId = sessionManager.getUserId(); // nếu backend cần
+        UserService userService = ApiClient.getAuthClient(requireContext()).create(UserService.class);
+
+
+        Call<List<Order>> call;
+
+        // Nếu backend tự lấy user từ token
+        call = userService.getUserOrders();
+
+        // Nếu backend cần userId trong URL (bỏ comment dòng dưới nếu dùng Cách 2)
+        // call = userService.getUserOrders(userId);
+
+        call.enqueue(new Callback<List<Order>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<Order>> call,
+                                   @NonNull Response<List<Order>> response) {
+                if (!isAdded() || getView() == null) return; // fragment bị detach rồi
+
+                progressBar.setVisibility(View.GONE);
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Order> orders = response.body();
+
+                    if (orderStatus != null && !orderStatus.isEmpty()) {
+                        // Treat 'processing' and 'shipped' as part of the Pending tab.
+                        // Backend may return statuses in lowercase; normalize with Locale.
+                        String wanted = orderStatus.toLowerCase(Locale.ROOT);
+                        if ("pending".equals(wanted)) {
+                            orders.removeIf(o -> {
+                                String s = o.getStatus() == null ? "" : o.getStatus().toLowerCase(Locale.ROOT);
+                                return !("pending".equals(s) || "processing".equals(s) || "shipped".equals(s));
+                            });
+                        } else {
+                            orders.removeIf(o -> !orderStatus.equalsIgnoreCase(o.getStatus()));
+                        }
+                    }
+
+                    orderAdapter = new OrderAdapter(orders, requireContext());
+                    recyclerView.setAdapter(orderAdapter);
+                } else {
+                    Toast.makeText(requireContext(), "Không tìm thấy đơn hàng!", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+
+            @Override
+            public void onFailure(@NonNull Call<List<Order>> call, @NonNull Throwable t) {
+                progressBar.setVisibility(View.GONE);
+                // Log lỗi chi tiết
+                Log.e("OrderListFragment", "Lỗi khi tải đơn hàng", t);
+                Toast.makeText(getContext(), "Lỗi khi tải đơn hàng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+
+        });
     }
 }
-

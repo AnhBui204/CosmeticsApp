@@ -13,6 +13,7 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.fe.models.Order;
+import com.example.fe.models.OrderItem;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.List;
@@ -48,19 +49,20 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
 
     class OrderViewHolder extends RecyclerView.ViewHolder {
 
-        TextView tvOrderNumber, tvDate, tvTrackingNumber, tvQuantity, tvSubtotal, tvStatus;
+        TextView tvOrderNumber, tvDate, tvQuantity, tvSubtotal, tvStatus;
         MaterialButton btnDetails;
+        TextView tvItemsSummary;
 
         public OrderViewHolder(@NonNull View itemView) {
             super(itemView);
             tvOrderNumber = itemView.findViewById(R.id.tv_order_number);
             tvDate = itemView.findViewById(R.id.tv_date);
-            tvTrackingNumber = itemView.findViewById(R.id.tv_tracking_number);
+
             tvQuantity = itemView.findViewById(R.id.tv_quantity);
             tvSubtotal = itemView.findViewById(R.id.tv_subtotal);
             tvStatus = itemView.findViewById(R.id.tv_status);
             btnDetails = itemView.findViewById(R.id.btn_details);
-
+            tvItemsSummary = itemView.findViewById(R.id.tv_items_summary);
             // === BẮT ĐẦU PHẦN THÊM MỚI ===
             // Thêm listener cho toàn bộ item
             itemView.setOnClickListener(new View.OnClickListener() {
@@ -76,15 +78,15 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                         // 3. Tạo instance của OrderDetailFragment
                         // (Sử dụng phương thức newInstance chúng ta đã tạo)
                         Fragment detailFragment = OrderDetailFragment.newInstance(
-                                order.getOrderNumber(),
-                                order.getStatus()
-                        );
+                                order.getOrderCode(),
+                                order.getStatus());
 
                         // 4. Thực hiện chuyển Fragment
                         if (context instanceof FragmentActivity) {
                             FragmentActivity activity = (FragmentActivity) context;
                             activity.getSupportFragmentManager().beginTransaction()
-                                    .replace(R.id.fragment_container, detailFragment) // R.id.fragment_container là ID trong MainActivity
+                                    .replace(R.id.fragment_container, detailFragment) // R.id.fragment_container là ID
+                                                                                      // trong MainActivity
                                     .addToBackStack(null) // Thêm vào back stack để có thể quay lại
                                     .commit();
                         }
@@ -95,23 +97,55 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         }
 
         public void bind(Order order) {
-            tvOrderNumber.setText(String.format("Order #%s", order.getOrderNumber()));
-            tvDate.setText(order.getDate());
-            tvTrackingNumber.setText(String.format("Tracking number: %s", order.getTrackingNumber()));
-            tvQuantity.setText(String.format("Quantity: %d", order.getQuantity()));
-            tvSubtotal.setText(String.format(Locale.US, "Subtotal: $%.0f", order.getSubtotal()));
-            tvStatus.setText(order.getStatus().toUpperCase());
+            tvOrderNumber.setText(String.format("Order #%s", order.getOrderCode()));
+            tvDate.setText(order.getCreatedAt());
+            int totalQuantity = 0;
+            if (order.getItems() != null) {
+                for (OrderItem item : order.getItems()) {
+                    totalQuantity += item.getQuantity();
+                }
+            }
+            tvQuantity.setText("Quantity: " + totalQuantity);
+            tvSubtotal.setText(String.format(Locale.US, "Subtotal: $%.0f", order.getTotalAmount()));
+            // Nối tên tất cả sản phẩm
+            StringBuilder itemsSummary = new StringBuilder();
+            if (order.getItems() != null) {
+                for (OrderItem item : order.getItems()) {
+                    itemsSummary.append(item.getName()).append(", ");
+                }
+                // bỏ dấu ", " cuối cùng
+                if (itemsSummary.length() > 2) {
+                    itemsSummary.setLength(itemsSummary.length() - 2);
+                }
+            }
+            tvItemsSummary.setText(itemsSummary.toString());
 
-            // Đặt màu cho trạng thái
+            String status = order.getStatus().toLowerCase(Locale.ROOT); // backend trả chữ thường
+            tvStatus.setText(status.toUpperCase());
+
             int statusColor;
-            if ("Pending".equals(order.getStatus())) {
-                statusColor = ContextCompat.getColor(context, R.color.orange_500); // Cần định nghĩa màu này
-            } else if ("Delivered".equals(order.getStatus())) {
-                statusColor = ContextCompat.getColor(context, R.color.green_500); // Cần định nghĩa màu này
-            } else { // Cancelled
-                statusColor = ContextCompat.getColor(context, R.color.red_500); // Cần định nghĩa màu này
+            switch (status) {
+                case "pending":
+                    statusColor = ContextCompat.getColor(context, R.color.orange_500);
+                    break;
+                case "processing":
+                    statusColor = ContextCompat.getColor(context, R.color.orange_500);
+                    break;
+                case "shipped":
+                    statusColor = ContextCompat.getColor(context, R.color.orange_500);
+                    break;
+                case "delivered":
+                    statusColor = ContextCompat.getColor(context, R.color.green_500);
+                    break;
+                case "cancelled":
+                    statusColor = ContextCompat.getColor(context, R.color.red_500);
+                    break;
+                default:
+                    statusColor = ContextCompat.getColor(context, R.color.red_500);
+                    break;
             }
             tvStatus.setTextColor(statusColor);
         }
+
     }
 }

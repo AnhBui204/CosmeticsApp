@@ -1,60 +1,45 @@
 package com.example.fe.models;
 
+import java.util.List;
+
 public class Order {
-    private final String orderNumber;
-    private final String date;
-    private final String trackingNumber;
-    private final int quantity;
-    private final double subtotal;
-    private final String status; // "Pending", "Delivered", "Cancelled"
-    private final String customerName;
-    private final String itemsSummary;
+    private String orderCode; // tương ứng backend
+    private String status;
+    private String shippingAddress;
+    private List<OrderItem> items;
+    private double totalAmount;
+    private String paymentMethod;
+    private String voucherCode;
+    private String createdAt;
 
-    public Order(String orderNumber, String date, String trackingNumber, int quantity, double subtotal, String status) {
-        this(orderNumber, date, trackingNumber, quantity, subtotal, status, "", "");
-    }
+    // getters & setters
+    public String getOrderCode() { return orderCode; }
+    public void setOrderCode(String orderCode) { this.orderCode = orderCode; }
 
-    public Order(String orderNumber, String date, String trackingNumber, int quantity, double subtotal, String status, String customerName, String itemsSummary) {
-        this.orderNumber = orderNumber;
-        this.date = date;
-        this.trackingNumber = trackingNumber;
-        this.quantity = quantity;
-        this.subtotal = subtotal;
-        this.status = status;
-        this.customerName = customerName;
-        this.itemsSummary = itemsSummary;
-    }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 
-    // Getters
-    public String getOrderNumber() {
-        return orderNumber;
-    }
+    public String getShippingAddress() { return shippingAddress; }
+    public void setShippingAddress(String shippingAddress) { this.shippingAddress = shippingAddress; }
 
-    public String getDate() {
-        return date;
-    }
+    public List<OrderItem> getItems() { return items; }
+    public void setItems(List<OrderItem> items) { this.items = items; }
 
-    public String getTrackingNumber() {
-        return trackingNumber;
-    }
+    public double getTotalAmount() { return totalAmount; }
+    public void setTotalAmount(double totalAmount) { this.totalAmount = totalAmount; }
 
-    public int getQuantity() {
-        return quantity;
-    }
+    public String getPaymentMethod() { return paymentMethod; }
+    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
 
-    public double getSubtotal() {
-        return subtotal;
-    }
+    public String getVoucherCode() { return voucherCode; }
+    public void setVoucherCode(String voucherCode) { this.voucherCode = voucherCode; }
 
-    public String getStatus() {
-        return status;
-    }
-
-    public String getCustomerName() {
-        return customerName;
-    }
-
-    public String getItemsSummary() {
-        return itemsSummary;
-    }
+    public String getCreatedAt() { return createdAt; }
+    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
 }
+
+// ShippingAddress model
+
+
+
+

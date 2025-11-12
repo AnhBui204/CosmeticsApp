@@ -28,7 +28,7 @@ const calculateCartTotal = async (cartItems) => {
  * @access  Private
  */
 export const getCart = asyncHandler(async (req, res) => {
-    let cart = await Cart.findOne({ userId: req.user._id })
+    let cart = await Cart.findOne({ userId: req.user._id  })
         .populate({
             path: 'items.productId',
             model: 'Product',
@@ -111,12 +111,6 @@ export const addItemToCart = asyncHandler(async (req, res) => {
 
     res.status(200).json(cart);
 });
-
-
-
-
-
-
 
 /**
  * @desc    Add/update item to a specific user's cart (admin or owner)

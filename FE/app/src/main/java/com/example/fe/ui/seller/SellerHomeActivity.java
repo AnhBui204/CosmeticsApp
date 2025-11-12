@@ -1,6 +1,5 @@
 package com.example.fe.ui.seller;
 
-// Import các thư viện cần thiết
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -30,6 +29,8 @@ import com.example.fe.ui.seller.fragment.SellerOrdersFragment;
 import com.example.fe.ui.seller.fragment.SellerProductsFragment;
 import com.example.fe.ui.voucher.VoucherFragment;
 import com.example.fe.utils.SessionManager;
+
+// --- BIỂU ĐỒ ---
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.Entry;
