@@ -36,7 +36,8 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         // Bind UI
         holder.tvName.setText(c.getName());
         holder.tvDesc.setText(c.getDescription());
-        holder.tvCategoryID.setText(c.getCategoryID()); // đang tái dùng id text price để show mã
+        // Don't display the raw database ObjectId in the UI. Hide the TextView.
+        holder.tvCategoryID.setVisibility(android.view.View.GONE);
         holder.imgCategory.setImageResource(c.getImageResId());
         holder.imgCategory.setContentDescription(c.getName());
 
