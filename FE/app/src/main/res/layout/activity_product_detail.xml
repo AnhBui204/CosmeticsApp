@@ -10,7 +10,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <!-- Top bar -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -56,7 +55,6 @@
             </FrameLayout>
         </LinearLayout>
 
-        <!-- Title -->
         <TextView
             android:id="@+id/tvName"
             android:layout_width="match_parent"
@@ -66,7 +64,6 @@
             android:textStyle="bold"
             android:lineSpacingExtra="2dp"/>
 
-        <!-- Rating + reviews -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -89,7 +86,6 @@
                 android:layout_marginStart="6dp"/>
         </LinearLayout>
 
-        <!-- Image + side actions -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -117,15 +113,11 @@
                     android:layout_height="48dp"
                     android:layout_marginBottom="8dp"
                     android:background="@drawable/bg_pill"
-
                     android:src="@drawable/ic_heart" />
-
 
             </LinearLayout>
         </LinearLayout>
 
-
-        <!-- Price -->
         <TextView
             android:id="@+id/tvPrice"
             android:layout_width="wrap_content"
@@ -136,7 +128,6 @@
             android:layout_marginTop="16dp"
             android:textSize="16sp"/>
 
-        <!-- Buttons -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -149,27 +140,17 @@
                 android:layout_height="48dp"
                 android:layout_weight="1"
                 android:text="Add To Cart"
-
                 android:textColor="@color/pink_500"
-
                 app:strokeColor="@color/pink_500"
                 app:strokeWidth="2dp"
                 app:cornerRadius="24dp"
-
                 app:backgroundTint="@android:color/white"
                 app:backgroundTintMode="src_over"
-
-            android:insetLeft="0dp"
-            android:insetRight="0dp"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-
-            app:rippleColor="@color/pink_100"
-            />
-
-
-
-
+                android:insetLeft="0dp"
+                android:insetRight="0dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                app:rippleColor="@color/pink_100"/>
 
             <Space android:layout_width="12dp" android:layout_height="48dp"/>
 
@@ -185,7 +166,6 @@
 
         </LinearLayout>
 
-        <!-- Details -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -202,7 +182,6 @@
             android:lineSpacingExtra="2dp"
             android:layout_marginTop="4dp"/>
 
-        <!-- Reviews -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
