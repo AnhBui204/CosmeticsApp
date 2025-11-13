@@ -36,7 +36,6 @@
                 android:layout_marginTop="5dp"/>
         </LinearLayout>
 
-        <!-- Header search for Home (visible on Home) - styled per your preference -->
         <EditText
             android:id="@+id/etHeaderSearch"
             android:layout_width="match_parent"
@@ -52,7 +51,6 @@
             android:textColor="@android:color/white"
             android:singleLine="true" />
 
-        <!-- Header order controls (visible only when Orders selected) -->
         <LinearLayout
             android:id="@+id/headerOrderControls"
             android:layout_width="match_parent"
@@ -130,7 +128,6 @@
 
     </RelativeLayout>
 
-    <!-- Main content placeholder for seller (orders, products, stats) -->
     <FrameLayout
         android:id="@+id/seller_fragment_container"
         android:layout_width="match_parent"
@@ -184,7 +181,6 @@
 
     </FrameLayout>
 
-    <!-- Seller Bottom Navigation -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/sellerBottomNav"
         android:layout_width="match_parent"
