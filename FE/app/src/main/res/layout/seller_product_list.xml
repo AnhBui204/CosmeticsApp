@@ -4,7 +4,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- RecyclerView for seller's product list -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerSellerProducts"
         android:layout_width="match_parent"
@@ -14,7 +13,6 @@
         android:paddingBottom="90dp"
         android:overScrollMode="never" />
 
-    <!-- Floating Add Button anchored to the bottom-end so it overlays the list -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAddProduct"
         android:layout_width="wrap_content"
