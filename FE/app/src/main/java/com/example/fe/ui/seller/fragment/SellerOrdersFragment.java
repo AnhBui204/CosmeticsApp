@@ -11,6 +11,8 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.app.DatePickerDialog;
 import android.widget.Toast;
+
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,9 +23,12 @@ import android.widget.TextView;
 
 import com.example.fe.R;
 import com.example.fe.models.Order;
+import com.example.fe.models.OrderItem;
 import com.example.fe.ui.seller.SellerOrderDetailActivity;
+import com.example.fe.utils.SessionManager;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -39,7 +44,6 @@ public class SellerOrdersFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.seller_orders, container, false);
-
         tvPending = view.findViewById(R.id.tvPending);
         tvDelivered = view.findViewById(R.id.tvDelivered);
         tvCancelled = view.findViewById(R.id.tvCancelled);
@@ -108,7 +112,6 @@ public class SellerOrdersFragment extends Fragment {
             });
         }
 
-        // TODO: Xử lý nút filter ngày nếu cần
         return view;
     }
 
@@ -162,15 +165,40 @@ public class SellerOrdersFragment extends Fragment {
             RecyclerView recyclerView = view.findViewById(R.id.recyclerOrdersList);
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-            // Create sample Order data
             List<Order> data = new ArrayList<>();
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+
             for (int i = 1; i <= 8; i++) {
+                Order order = new Order();
                 String num = "ORD" + (1000 + i);
-                String date = "2025-11-" + String.format(Locale.US, "%02d", i);
+                String dateString = "2025-11-" + String.format(Locale.US, "%02d", i);
                 String cust = "Customer " + i;
-                String items = (i % 2 == 0) ? "Lipstick, Serum" : "Moisturizer";
                 String st = status.equals("ALL") ? (i % 3 == 0 ? "DELIVERED" : (i % 2 == 0 ? "PENDING" : "CANCELLED")) : status;
-                data.add(new Order(num, date, "TRK" + (2000 + i), 2, 45.0 + i, st, cust, items));
+                double total = 45.0 + i;
+
+                List<OrderItem> dummyItems = new ArrayList<>();
+                if (i % 2 == 0) {
+                    dummyItems.add(new OrderItem("Lipstick", 1, 20.0));
+                    dummyItems.add(new OrderItem("Serum", 1, 25.0 + i));
+                } else {
+                    dummyItems.add(new OrderItem("Moisturizer", 2, 22.5 + (i/2.0)));
+                }
+
+                order.setOrderNumber(num);
+                order.setStatus(st);
+                order.setTotalAmount(total);
+                order.setItems(dummyItems);
+                order.setUserId(cust); // Tạm thời dùng UserId để lưu tên customer
+
+                try {
+                    order.setDate(sdf.parse(dateString));
+                } catch (java.text.ParseException e) {
+                    e.printStackTrace();
+                    order.setDate(new Date());
+                }
+
+                data.add(order);
             }
 
             adapter = new OrdersAdapter(data);
@@ -191,6 +219,9 @@ public class SellerOrdersFragment extends Fragment {
     static class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.VH> {
         private final List<Order> original;
         private final List<Order> displayed;
+        // Thêm một SimpleDateFormat để format và so sánh ngày
+        private final SimpleDateFormat filterDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+        private final SimpleDateFormat displayDateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.US);
 
         OrdersAdapter(List<Order> data) {
             this.original = new ArrayList<>(data);
@@ -210,20 +241,81 @@ public class SellerOrdersFragment extends Fragment {
             applyFilters();
         }
 
+        // --- HÀM HELPER MỚI (ĐÃ THÊM) ---
+        private boolean checkItemsMatch(List<OrderItem> items, String filter) {
+            if (items == null || filter == null) {
+                return false;
+            }
+            for (OrderItem item : items) {
+                if (item.getName() != null && item.getName().toLowerCase().contains(filter)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // --- HÀM HELPER MỚI (ĐÃ THÊM) ---
+        private String getCustomerNameFromOrder(Order o) {
+            if (o.getShippingAddress() != null && o.getShippingAddress().getFullName() != null) {
+                return o.getShippingAddress().getFullName(); // Cho API thật
+            }
+            if (o.getUserId() != null) {
+                return o.getUserId(); // Cho dữ liệu giả
+            }
+            return "N/A";
+        }
+
+        // --- HÀM HELPER MỚI (ĐÃ THÊM) ---
+        private String getItemsSummaryFromOrder(Order o) {
+            if (o.getItems() == null || o.getItems().isEmpty()) {
+                return "No items";
+            }
+            StringBuilder summary = new StringBuilder();
+            for (int i = 0; i < o.getItems().size(); i++) {
+                summary.append(o.getItems().get(i).getName());
+                if (i < o.getItems().size() - 1) {
+                    summary.append(", ");
+                }
+            }
+            return summary.toString();
+        }
+
+        // --- HÀM HELPER MỚI (ĐÃ THÊM) ---
+        private String formatDate(Date date) {
+            if (date == null) return "N/A";
+            return displayDateFormat.format(date);
+        }
+
         private void applyFilters() {
             displayed.clear();
             for (Order o : original) {
                 boolean matchText = true;
                 if (textFilter != null) {
                     String lower = textFilter.toLowerCase();
-                    matchText = (o.getOrderNumber()!=null && o.getOrderNumber().toLowerCase().contains(lower)) ||
-                            (o.getCustomerName()!=null && o.getCustomerName().toLowerCase().contains(lower)) ||
-                            (o.getItemsSummary()!=null && o.getItemsSummary().toLowerCase().contains(lower));
+
+                    // 1. Kiểm tra Mã đơn hàng
+                    boolean matchOrderNum = (o.getOrderNumber() != null && o.getOrderNumber().toLowerCase().contains(lower));
+
+                    // 2. Kiểm tra Tên khách hàng (ĐÃ SỬA)
+                    boolean matchCustomer = getCustomerNameFromOrder(o).toLowerCase().contains(lower);
+
+                    // 3. Kiểm tra Tên sản phẩm (ĐÃ SỬA)
+                    boolean matchItems = checkItemsMatch(o.getItems(), lower);
+
+                    matchText = matchOrderNum || matchCustomer || matchItems;
                 }
+
+                // 4. Kiểm tra Ngày (ĐÃ SỬA)
                 boolean matchDate = true;
                 if (dateFilter != null) {
-                    matchDate = dateFilter.equals(o.getDate());
+                    if (o.getDate() != null) {
+                        String orderDateStr = filterDateFormat.format(o.getDate());
+                        matchDate = dateFilter.equals(orderDateStr);
+                    } else {
+                        matchDate = false;
+                    }
                 }
+
                 if (matchText && matchDate) displayed.add(o);
             }
             notifyDataSetChanged();
@@ -239,46 +331,49 @@ public class SellerOrdersFragment extends Fragment {
         @Override
         public void onBindViewHolder(@NonNull VH holder, int position) {
             Order o = displayed.get(position);
+
+            String orderDate = formatDate(o.getDate());
+            String customerName = getCustomerNameFromOrder(o);
+
             holder.tvOrderId.setText(o.getOrderNumber());
-            holder.tvOrderDate.setText(o.getDate());
-            holder.tvTrackingNumber.setText("Tracking number: " + o.getTrackingNumber());
+            holder.tvOrderDate.setText(orderDate);
             holder.tvQuantity.setText("Quantity: " + o.getQuantity());
-            holder.tvSubtotal.setText(String.format(Locale.US, "Subtotal: $%.2f", o.getSubtotal()));
-            holder.tvCustomerName.setText(o.getCustomerName());
-            holder.tvOrderItems.setText(o.getItemsSummary());
+            holder.tvSubtotal.setText(String.format(Locale.US, "Subtotal: $%.2f", o.getTotalAmount())); // Dùng getTotalAmount()
+            holder.tvCustomerName.setText(customerName);
+            holder.tvOrderItems.setText(getItemsSummaryFromOrder(o));
             holder.tvOrderStatus.setText(o.getStatus());
 
-            // Set status color based on order status
+            // Ẩn tracking number vì không có trong model
+            if (holder.tvTrackingNumber != null) {
+                holder.tvTrackingNumber.setVisibility(View.GONE);
+            }
+
+            // Set status color (Giữ nguyên)
             if (o.getStatus() != null) {
                 String st = o.getStatus().trim().toUpperCase();
                 int color;
                 switch (st) {
-                    case "PENDING":
-                        color = android.graphics.Color.parseColor("#CF6212");
-                        break;
-                    case "DELIVERED":
-                        color = android.graphics.Color.parseColor("#009254");
-                        break;
-                    case "CANCELLED":
-                        color = android.graphics.Color.parseColor("#C50000");
-                        break;
-                    default:
-                        color = android.graphics.Color.parseColor("#7A7A7A");
+                    case "PENDING": color = android.graphics.Color.parseColor("#CF6212"); break;
+                    case "DELIVERED": color = android.graphics.Color.parseColor("#009254"); break;
+                    case "CANCELLED": color = android.graphics.Color.parseColor("#C50000"); break;
+                    default: color = android.graphics.Color.parseColor("#7A7A7A");
                 }
                 holder.tvOrderStatus.setTextColor(color);
             }
 
             holder.btnDetails.setOnClickListener(v -> {
-                // Open SellerOrderDetailActivity with order extras
                 android.content.Context ctx = v.getContext();
                 android.content.Intent intent = new android.content.Intent(ctx, SellerOrderDetailActivity.class);
+
+                // Gửi dữ liệu chính xác (ĐÃ SỬA)
                 intent.putExtra("order_id", o.getOrderNumber());
-                intent.putExtra("order_date", o.getDate());
-                intent.putExtra("tracking", o.getTrackingNumber());
-                intent.putExtra("customer", o.getCustomerName());
+                intent.putExtra("order_date", orderDate); // Gửi ngày đã format
+                // intent.putExtra("tracking", null); // Bỏ tracking
+                intent.putExtra("customer", customerName);
                 intent.putExtra("status", o.getStatus());
-                intent.putExtra("subtotal", o.getSubtotal());
+                intent.putExtra("subtotal", o.getTotalAmount()); // Dùng getTotalAmount()
                 intent.putExtra("quantity", o.getQuantity());
+
                 ctx.startActivity(intent);
             });
         }
@@ -289,6 +384,7 @@ public class SellerOrdersFragment extends Fragment {
         }
 
         static class VH extends RecyclerView.ViewHolder {
+            // ĐÃ SỬA: Xóa tvTrackingNumber
             TextView tvOrderId, tvOrderDate, tvTrackingNumber, tvQuantity, tvSubtotal, tvCustomerName, tvOrderItems, tvOrderStatus;
             com.google.android.material.button.MaterialButton btnDetails;
 
@@ -296,7 +392,7 @@ public class SellerOrdersFragment extends Fragment {
                 super(v);
                 tvOrderId = v.findViewById(R.id.tv_order_number);
                 tvOrderDate = v.findViewById(R.id.tv_date);
-                tvTrackingNumber = v.findViewById(R.id.tv_tracking_number);
+                tvTrackingNumber = v.findViewById(R.id.tv_tracking_number); // Giữ lại để tránh crash, nhưng sẽ bị ẩn
                 tvQuantity = v.findViewById(R.id.tv_quantity);
                 tvSubtotal = v.findViewById(R.id.tv_subtotal);
                 tvCustomerName = v.findViewById(R.id.tv_customer_name);

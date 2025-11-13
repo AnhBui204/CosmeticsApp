@@ -90,7 +90,7 @@ export const getTopSellingProducts = async (req, res) => {
                 // 1. Lọc đơn hàng của seller và đã giao thành công
                 $match: {
                     sellerId: new mongoose.Types.ObjectId(sellerId),
-                    status: 'delivered'
+                    status: { $in: ['delivered', 'processing'] }
                 }
             },
             {

@@ -3,6 +3,7 @@ package com.example.fe.ui.category;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,6 +19,7 @@ import com.example.fe.ui.favorite.FavoriteActivity;
 import com.example.fe.ui.home.HomeActivity;
 import com.example.fe.ui.profile.ProfileActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.example.fe.utils.SessionManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +37,12 @@ public class CategoryActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_category);
-
+        SessionManager sessionManager = new SessionManager(this);
+        TextView tvGreeting = findViewById(R.id.tvGreeting);
+        String name = sessionManager.getName();
+        if (name != null && !name.isEmpty()) {
+            tvGreeting.setText("Hey, " + name);
+        }
         // Cart icon click
         ImageView imgCart = findViewById(R.id.imgCart);
         imgCart.setOnClickListener(v -> startActivity(new Intent(CategoryActivity.this, ShoppingCartActivity.class)));

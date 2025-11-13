@@ -1,60 +1,78 @@
+// com/example/fe/models/Order.java
 package com.example.fe.models;
 
+import com.google.gson.annotations.SerializedName;
+import java.util.Date;
+import java.util.List;
+
 public class Order {
-    private final String orderNumber;
-    private final String date;
-    private final String trackingNumber;
-    private final int quantity;
-    private final double subtotal;
-    private final String status; // "Pending", "Delivered", "Cancelled"
-    private final String customerName;
-    private final String itemsSummary;
 
-    public Order(String orderNumber, String date, String trackingNumber, int quantity, double subtotal, String status) {
-        this(orderNumber, date, trackingNumber, quantity, subtotal, status, "", "");
+    @SerializedName("_id")
+    private String id;
+
+    @SerializedName("orderCode")
+    private String orderNumber; // (orderCode từ API)
+
+    @SerializedName("userId")
+    private String userId;
+
+    @SerializedName("items")
+    private List<OrderItem> items;
+
+    @SerializedName("totalAmount")
+    private double totalAmount;
+
+    @SerializedName("shippingAddress")
+    private ShippingAddress shippingAddress;
+
+    @SerializedName("status")
+    private String status;
+
+    @SerializedName("createdAt")
+    private Date date;
+
+    // --- GETTERS (Giữ nguyên) ---
+    public String getId() { return id; }
+    public String getUserId() {
+        return userId;
     }
-
-    public Order(String orderNumber, String date, String trackingNumber, int quantity, double subtotal, String status, String customerName, String itemsSummary) {
-        this.orderNumber = orderNumber;
-        this.date = date;
-        this.trackingNumber = trackingNumber;
-        this.quantity = quantity;
-        this.subtotal = subtotal;
-        this.status = status;
-        this.customerName = customerName;
-        this.itemsSummary = itemsSummary;
-    }
-
-    // Getters
-    public String getOrderNumber() {
-        return orderNumber;
-    }
-
-    public String getDate() {
-        return date;
-    }
-
-    public String getTrackingNumber() {
-        return trackingNumber;
-    }
-
+    public String getOrderNumber() { return orderNumber; }
     public int getQuantity() {
-        return quantity;
+        if (items == null) return 0;
+        int totalQty = 0;
+        for (OrderItem item : items) {
+            totalQty += item.getQuantity();
+        }
+        return totalQty;
+    }
+    public double getTotalAmount() { return totalAmount; }
+    public String getStatus() { return status; }
+    public Date getDate() { return date; }
+    public ShippingAddress getShippingAddress() { return shippingAddress; }
+    public List<OrderItem> getItems() { return items; }
+
+    // --- THÊM CÁC HÀM SETTERS NÀY VÀO ---
+    public void setOrderNumber(String orderNumber) {
+        this.orderNumber = orderNumber;
     }
 
-    public double getSubtotal() {
-        return subtotal;
+    public void setItems(List<OrderItem> items) {
+        this.items = items;
     }
 
-    public String getStatus() {
-        return status;
+    public void setTotalAmount(double totalAmount) {
+        this.totalAmount = totalAmount;
     }
 
-    public String getCustomerName() {
-        return customerName;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
-    public String getItemsSummary() {
-        return itemsSummary;
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 }

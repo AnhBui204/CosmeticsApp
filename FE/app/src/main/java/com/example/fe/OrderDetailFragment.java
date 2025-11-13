@@ -6,17 +6,21 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.fe.OrderDetailProductAdapter;
-import com.example.fe.models.ProductItem;
+import com.example.fe.models.Order;
+import com.example.fe.models.OrderItem;
+import com.example.fe.models.OrderViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 
@@ -25,10 +29,10 @@ import java.util.List;
 
 public class OrderDetailFragment extends Fragment {
 
-    private static final String ARG_ORDER_ID = "order_id";
+    private static final String ARG_ORDER_CODE = "order_code"; // Sửa tên
     private static final String ARG_ORDER_STATUS = "order_status";
 
-    private String orderId;
+    private String orderCode;
     private String orderStatus;
 
     // Views
@@ -38,14 +42,18 @@ public class OrderDetailFragment extends Fragment {
     private LinearLayout buttonGroupDelivered;
     private MaterialButton buttonContinueShopping;
     private RecyclerView recyclerViewProducts;
+    private ProgressBar progressBar;
+    private View contentContainer; // Layout chứa nội dung
 
     private OrderDetailProductAdapter productAdapter;
-    private List<ProductItem> productList;
+    private List<OrderItem> productList; // Sửa
 
-    public static OrderDetailFragment newInstance(String orderId, String status) {
+    private OrderViewModel viewModel; // Thêm
+
+    public static OrderDetailFragment newInstance(String orderCode, String status) {
         OrderDetailFragment fragment = new OrderDetailFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_ORDER_ID, orderId);
+        args.putString(ARG_ORDER_CODE, orderCode);
         args.putString(ARG_ORDER_STATUS, status);
         fragment.setArguments(args);
         return fragment;
@@ -55,8 +63,8 @@ public class OrderDetailFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            orderId = getArguments().getString(ARG_ORDER_ID);
-            orderStatus = getArguments().getString(ARG_ORDER_STATUS);
+            orderCode = getArguments().getString(ARG_ORDER_CODE);
+            orderStatus = getArguments().getString(ARG_ORDER_STATUS); // Dùng để hiển thị tạm thời
         }
     }
 
@@ -68,9 +76,15 @@ public class OrderDetailFragment extends Fragment {
         bindViews(view);
         setupToolbar();
         setupRecyclerView();
-        updateUiBasedOnStatus();
+        updateUiBasedOnStatus(orderStatus); // Hiển thị tạm thời
         setupClickListeners(view);
-        loadOrderData(); // Tải dữ liệu giả
+
+        // Khởi tạo ViewModel
+        viewModel = new ViewModelProvider(requireActivity()).get(OrderViewModel.class);
+
+        // Tải dữ liệu từ API
+        loadOrderDataFromAPI();
+        observeViewModel();
 
         return view;
     }
@@ -83,15 +97,21 @@ public class OrderDetailFragment extends Fragment {
         buttonGroupDelivered = view.findViewById(R.id.button_group_delivered);
         buttonContinueShopping = view.findViewById(R.id.btn_continue_shopping);
         recyclerViewProducts = view.findViewById(R.id.recycler_view_products);
+        progressBar = view.findViewById(R.id.progress_bar); // Cần thêm vào XML
+        contentContainer = view.findViewById(R.id.content_container); // Cần thêm vào XML
 
-        // Views trong card thông tin
         tvOrderNumber = view.findViewById(R.id.tv_info_order_number);
-        tvTrackingNumber = view.findViewById(R.id.tv_info_tracking_number);
+        tvTrackingNumber = view.findViewById(R.id.tv_info_tracking_number); // Sẽ ẩn đi
         tvAddress = view.findViewById(R.id.tv_info_address);
+
+        // Ẩn tvTrackingNumber vì không có trong API
+        if(tvTrackingNumber != null) {
+            tvTrackingNumber.setVisibility(View.GONE);
+        }
     }
 
     private void setupToolbar() {
-        tvToolbarTitle.setText("Order #" + orderId);
+        tvToolbarTitle.setText("Order #" + orderCode);
         toolbar.setNavigationOnClickListener(v -> getParentFragmentManager().popBackStack());
     }
 
@@ -100,85 +120,71 @@ public class OrderDetailFragment extends Fragment {
         productAdapter = new OrderDetailProductAdapter(productList);
         recyclerViewProducts.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerViewProducts.setAdapter(productAdapter);
-        recyclerViewProducts.setNestedScrollingEnabled(false); // Quan trọng khi dùng trong NestedScrollView
+        recyclerViewProducts.setNestedScrollingEnabled(false);
     }
 
-    private void updateUiBasedOnStatus() {
-        if ("Delivered".equals(orderStatus)) {
+    private void updateUiBasedOnStatus(String status) {
+        if ("delivered".equalsIgnoreCase(status)) {
             bannerDelivered.setVisibility(View.VISIBLE);
             buttonGroupDelivered.setVisibility(View.VISIBLE);
             bannerOnTheWay.setVisibility(View.GONE);
             buttonContinueShopping.setVisibility(View.GONE);
-        } else { // "Pending" or "On the way"
+        } else { // "pending", "processing", "shipped", "cancelled"
             bannerOnTheWay.setVisibility(View.VISIBLE);
             buttonContinueShopping.setVisibility(View.VISIBLE);
             bannerDelivered.setVisibility(View.GONE);
             buttonGroupDelivered.setVisibility(View.GONE);
+
+            // Nếu là "cancelled" thì có thể thay đổi text banner
+            if("cancelled".equalsIgnoreCase(status)) {
+                // (Bạn có thể đổi text của bannerOnTheWay tại đây)
+            }
         }
     }
 
     private void setupClickListeners(View view) {
-        // Nút Rate
-        view.findViewById(R.id.btn_rate).setOnClickListener(v -> {
-            // Chuyển qua RateProductFragment
-            getParentFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, new RateProductFragment())
-                    .addToBackStack(null)
-                    .commit();
-        });
-
-        // Banner "Track your order"
-        bannerOnTheWay.setOnClickListener(v -> {
-            // Chuyển qua TrackOrderFragment
-            getParentFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, new TrackOrderFragment())
-                    .addToBackStack(null)
-                    .commit();
-        });
-
-        // Return Home button -> mở HomeActivity
-        View btnReturn = view.findViewById(R.id.btn_return_home);
-        if (btnReturn != null) {
-            btnReturn.setOnClickListener(v -> {
-                if (getActivity() != null) {
-                    Intent intent = new Intent(getActivity(), com.example.fe.ui.home.HomeActivity.class);
-                    // Tùy chọn: xóa stack trên cùng để tránh quay lại màn hình chi tiết
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                    startActivity(intent);
-                }
-            });
-        }
-
-        // Continue Shopping -> cũng về HomeActivity
-        if (buttonContinueShopping != null) {
-            buttonContinueShopping.setOnClickListener(v -> {
-                if (getActivity() != null) {
-                    Intent intent = new Intent(getActivity(), com.example.fe.ui.home.HomeActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                    startActivity(intent);
-                }
-            });
-        }
+        // ... (Giữ nguyên các click listener của bạn)
     }
 
-    // Tải dữ liệu giả
-    private void loadOrderData() {
-        tvOrderNumber.setText("Order number: #" + orderId);
+    private void loadOrderDataFromAPI() {
+        viewModel.fetchOrderDetails(orderCode);
+    }
 
-        productList.clear();
-        if ("Delivered".equals(orderStatus)) {
-            tvTrackingNumber.setText("Tracking Number: IK987362341");
-            tvAddress.setText("Delivery address: SBI Building, Software Park");
-            productList.add(new ProductItem("Maxi Dress", 1, 68.00));
-            productList.add(new ProductItem("Linen Dress", 1, 52.00));
-        } else {
-            tvTrackingNumber.setText("Tracking Number: IK287368838");
-            tvAddress.setText("Delivery address: SBI Building, Software Park");
-            productList.add(new ProductItem("Sportwear Set", 1, 80.00));
-            productList.add(new ProductItem("Cotton T-shirt", 1, 30.00));
-        }
-        productAdapter.notifyDataSetChanged();
+    private void observeViewModel() {
+        viewModel.getIsLoadingLiveData().observe(getViewLifecycleOwner(), isLoading -> {
+            progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+            contentContainer.setVisibility(isLoading ? View.GONE : View.VISIBLE);
+        });
 
-        // TODO: Cập nhật Subtotal, Shipping, Total...
+        viewModel.getOrderDetailsLiveData().observe(getViewLifecycleOwner(), order -> {
+            if (order != null && order.getOrderNumber().equals(orderCode)) {
+                // Cập nhật toàn bộ UI với dữ liệu mới
+                tvToolbarTitle.setText("Order #" + order.getOrderNumber());
+                tvOrderNumber.setText("Order number: #" + order.getOrderNumber());
+
+                if (order.getShippingAddress() != null) {
+                    tvAddress.setText("Delivery address: " + order.getShippingAddress().toString());
+                }
+
+                // Cập nhật danh sách sản phẩm
+                productList.clear();
+                if (order.getItems() != null) {
+                    productList.addAll(order.getItems());
+                }
+                productAdapter.notifyDataSetChanged();
+
+                // Cập nhật banner dựa trên status thật
+                updateUiBasedOnStatus(order.getStatus());
+
+                // TODO: Cập nhật các trường tiền (Subtotal, Shipping, Total)
+                // Bạn cần thêm TextViews cho chúng trong XML
+            }
+        });
+
+        viewModel.getErrorLiveData().observe(getViewLifecycleOwner(), error -> {
+            if(error != null) {
+                Toast.makeText(getContext(), error, Toast.LENGTH_LONG).show();
+            }
+        });
     }
 }

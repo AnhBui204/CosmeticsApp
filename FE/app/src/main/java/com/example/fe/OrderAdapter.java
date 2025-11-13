@@ -8,24 +8,27 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.fe.models.Order;
 import com.google.android.material.button.MaterialButton;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHolder> {
 
     private final List<Order> orderList;
     private final Context context;
+    private final OnOrderClickListener listener; // ✅ thêm listener
 
-    public OrderAdapter(List<Order> orderList, Context context) {
+    // ✅ Constructor có listener
+    public OrderAdapter(List<Order> orderList, Context context, OnOrderClickListener listener) {
         this.orderList = orderList;
         this.context = context;
+        this.listener = listener;
     }
 
     @NonNull
@@ -37,8 +40,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
 
     @Override
     public void onBindViewHolder(@NonNull OrderViewHolder holder, int position) {
-        Order order = orderList.get(position);
-        holder.bind(order);
+        holder.bind(orderList.get(position));
     }
 
     @Override
@@ -48,70 +50,63 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
 
     class OrderViewHolder extends RecyclerView.ViewHolder {
 
-        TextView tvOrderNumber, tvDate, tvTrackingNumber, tvQuantity, tvSubtotal, tvStatus;
+        TextView tvOrderNumber, tvDate, tvQuantity, tvSubtotal, tvStatus;
         MaterialButton btnDetails;
 
         public OrderViewHolder(@NonNull View itemView) {
             super(itemView);
             tvOrderNumber = itemView.findViewById(R.id.tv_order_number);
             tvDate = itemView.findViewById(R.id.tv_date);
-            tvTrackingNumber = itemView.findViewById(R.id.tv_tracking_number);
             tvQuantity = itemView.findViewById(R.id.tv_quantity);
             tvSubtotal = itemView.findViewById(R.id.tv_subtotal);
             tvStatus = itemView.findViewById(R.id.tv_status);
             btnDetails = itemView.findViewById(R.id.btn_details);
 
-            // === BẮT ĐẦU PHẦN THÊM MỚI ===
-            // Thêm listener cho toàn bộ item
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    // 1. Lấy vị trí item được click
-                    int position = getAdapterPosition();
-
-                    // 2. Đảm bảo vị trí hợp lệ
-                    if (position != RecyclerView.NO_POSITION) {
-                        Order order = orderList.get(position);
-
-                        // 3. Tạo instance của OrderDetailFragment
-                        // (Sử dụng phương thức newInstance chúng ta đã tạo)
-                        Fragment detailFragment = OrderDetailFragment.newInstance(
-                                order.getOrderNumber(),
-                                order.getStatus()
-                        );
-
-                        // 4. Thực hiện chuyển Fragment
-                        if (context instanceof FragmentActivity) {
-                            FragmentActivity activity = (FragmentActivity) context;
-                            activity.getSupportFragmentManager().beginTransaction()
-                                    .replace(R.id.fragment_container, detailFragment) // R.id.fragment_container là ID trong MainActivity
-                                    .addToBackStack(null) // Thêm vào back stack để có thể quay lại
-                                    .commit();
-                        }
-                    }
+            // ✅ Click gọi listener (an toàn)
+            View.OnClickListener clickListener = v -> {
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION && listener != null) {
+                    listener.onOrderClick(orderList.get(position));
                 }
-            });
-            // === KẾT THÚC PHẦN THÊM MỚI ===
+            };
+
+            itemView.setOnClickListener(clickListener);
+            btnDetails.setOnClickListener(clickListener);
         }
 
         public void bind(Order order) {
             tvOrderNumber.setText(String.format("Order #%s", order.getOrderNumber()));
-            tvDate.setText(order.getDate());
-            tvTrackingNumber.setText(String.format("Tracking number: %s", order.getTrackingNumber()));
-            tvQuantity.setText(String.format("Quantity: %d", order.getQuantity()));
-            tvSubtotal.setText(String.format(Locale.US, "Subtotal: $%.0f", order.getSubtotal()));
-            tvStatus.setText(order.getStatus().toUpperCase());
 
-            // Đặt màu cho trạng thái
+            if (order.getDate() != null) {
+                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.US);
+                sdf.setTimeZone(TimeZone.getDefault());
+                tvDate.setText(sdf.format(order.getDate()));
+            } else {
+                tvDate.setText("N/A");
+            }
+
+            tvQuantity.setText(String.format("Quantity: %d", order.getQuantity()));
+            tvSubtotal.setText(String.format(Locale.US, "Subtotal: $%.0f", order.getTotalAmount()));
+
+            String status = order.getStatus() != null ? order.getStatus().toUpperCase() : "UNKNOWN";
+            tvStatus.setText(status);
+
             int statusColor;
-            if ("Pending".equals(order.getStatus())) {
-                statusColor = ContextCompat.getColor(context, R.color.orange_500); // Cần định nghĩa màu này
-            } else if ("Delivered".equals(order.getStatus())) {
-                statusColor = ContextCompat.getColor(context, R.color.green_500); // Cần định nghĩa màu này
-            } else { // Cancelled
-                statusColor = ContextCompat.getColor(context, R.color.red_500); // Cần định nghĩa màu này
+            if ("pending".equalsIgnoreCase(order.getStatus()) || "processing".equalsIgnoreCase(order.getStatus())) {
+                statusColor = ContextCompat.getColor(context, R.color.orange_500);
+            } else if ("delivered".equalsIgnoreCase(order.getStatus())) {
+                statusColor = ContextCompat.getColor(context, R.color.green_500);
+            } else if ("cancelled".equalsIgnoreCase(order.getStatus())) {
+                statusColor = ContextCompat.getColor(context, R.color.red_500);
+            } else {
+                statusColor = ContextCompat.getColor(context, R.color.blue_500);
             }
             tvStatus.setTextColor(statusColor);
         }
+    }
+
+    // ✅ Interface click
+    public interface OnOrderClickListener {
+        void onOrderClick(Order order);
     }
 }

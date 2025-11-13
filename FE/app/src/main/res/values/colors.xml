@@ -36,4 +36,5 @@
     <color name="colorAccent">#EC8484</color>
     <color name="text_primary">#333333</color>
     <color name="text_secondary">#777777</color>
+    <color name="blue_500">#000032</color>
 </resources>

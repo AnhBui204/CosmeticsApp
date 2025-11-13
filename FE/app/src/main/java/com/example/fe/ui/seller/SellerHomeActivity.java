@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
@@ -27,8 +26,8 @@ import com.example.fe.data.RevenueData; // Model
 import com.example.fe.data.TopProductData; // Model
 import com.example.fe.ui.profile.ProfileActivity;
 import com.example.fe.ui.seller.adapter.TopProductAdapter; // Adapter
-import com.example.fe.ui.seller.fragment.SellerOrdersFragment; // << THÊM IMPORT
 import com.example.fe.ui.seller.fragment.SellerProductsFragment; // << THÊM IMPORT
+import com.example.fe.ui.seller.fragment.SellerOrdersFragment;
 import com.example.fe.utils.SessionManager; // Import để lấy ID
 
 // --- IMPORT THÊM CHO BIỂU ĐỒ ---

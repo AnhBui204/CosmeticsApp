@@ -36,7 +36,6 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         // Bind UI
         holder.tvName.setText(c.getName());
         holder.tvDesc.setText(c.getDescription());
-        holder.tvCategoryID.setText(c.getCategoryID()); // đang tái dùng id text price để show mã
         holder.imgCategory.setImageResource(c.getImageResId());
         holder.imgCategory.setContentDescription(c.getName());
 
@@ -62,7 +61,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
 
     static class CategoryViewHolder extends RecyclerView.ViewHolder {
         ImageView imgCategory;
-        TextView tvName, tvDesc, tvCategoryID;
+        TextView tvName, tvDesc;
 
         CategoryViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -70,7 +69,6 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
             imgCategory  = itemView.findViewById(R.id.imgProduct);
             tvName       = itemView.findViewById(R.id.tvProductName);
             tvDesc       = itemView.findViewById(R.id.tvProductDesc);
-            tvCategoryID = itemView.findViewById(R.id.tvProductPrice); // tái dùng id cũ
         }
     }
 }

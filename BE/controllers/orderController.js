@@ -215,3 +215,12 @@ export const getOrderByCode = asyncHandler(async (req, res) => {
 
     res.json(order);
 });
+
+export const getSellerOrders = asyncHandler(async (req, res) => {
+    const sellerId = req.user._id;  
+    const orders = await Order.find({
+        'items.sellerId': sellerId
+    }).sort({ createdAt: -1 });
+
+    res.json(orders);
+}); 

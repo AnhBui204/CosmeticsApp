@@ -1,6 +1,7 @@
 package com.example.fe.network;
 
 import com.example.fe.data.TopProductData;
+import com.example.fe.models.Order;
 import com.example.fe.models.ProductsResponse;
 import com.example.fe.models.Category;
 import com.example.fe.data.RevenueData;
@@ -68,4 +69,12 @@ public interface ApiService {
 
     @DELETE("api/users/{userId}/wishlist/{productId}")
     Call<List<com.example.fe.models.Product>> removeFromWishlist(@Path("userId") String userId, @Path("productId") String productId);
+
+    @GET("api/orders")
+    Call<List<Order>> getMyOrders();
+
+    @GET("api/orders/by-code/{orderCode}")
+    Call<Order> getOrderByCode(
+            @Path("orderCode") String orderCode
+    );
 }
