@@ -8,7 +8,6 @@
     android:padding="24dp"
     tools:context=".ui.auth.login.LoginActivity">
 
-    <!-- Title -->
     <TextView
         android:id="@+id/tvLoginTitle1"
         android:layout_width="wrap_content"
@@ -30,7 +29,6 @@
         app:layout_constraintTop_toBottomOf="@id/tvLoginTitle1"
         app:layout_constraintStart_toStartOf="@id/tvLoginTitle1"/>
 
-    <!-- Input fields -->
     <EditText
         android:id="@+id/etLoginEmail"
         android:layout_width="0dp"
@@ -55,7 +53,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- Forgot Password -->
     <TextView
         android:id="@+id/tvForgotPassword"
         android:layout_width="wrap_content"
@@ -67,7 +64,6 @@
         app:layout_constraintTop_toBottomOf="@id/etLoginPassword"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- Login Button -->
     <Button
         android:id="@+id/btnLogin"
         android:layout_width="wrap_content"
@@ -84,7 +80,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- Or log in with -->
     <TextView
         android:id="@+id/tvOrLogin"
         android:layout_width="wrap_content"
@@ -97,7 +92,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- Social buttons row -->
     <LinearLayout
         android:id="@+id/socialLoginContainer"
         android:layout_width="wrap_content"
@@ -118,14 +112,8 @@
             android:focusable="true"
             android:layout_marginEnd="16dp" />
 
-
-        <!--        <ImageView-->
-<!--            android:layout_width="48dp"-->
-<!--            android:layout_height="48dp"-->
-<!--            android:src="@drawable/ic_facebook"/>-->
     </LinearLayout>
 
-    <!-- Sign up link -->
     <LinearLayout
         android:id="@+id/layoutSignupLink"
         android:layout_width="wrap_content"
