@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:background="@android:color/white">
 
-    <!-- Top bar -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -62,7 +61,6 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- User info card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -123,7 +121,6 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Items header -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -133,14 +130,12 @@
                 android:textColor="#111"
                 android:layout_marginBottom="8dp" />
 
-            <!-- Product list -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvCheckoutItems"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:nestedScrollingEnabled="false" />
 
-            <!-- Summary card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -180,7 +175,6 @@
         </LinearLayout>
     </ScrollView>
 
-    <!-- Pay button fixed at bottom -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnPay"
         android:layout_width="match_parent"
