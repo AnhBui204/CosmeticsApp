@@ -4,7 +4,6 @@
     android:layout_height="match_parent"
     android:background="@android:color/white">
 
-    <!-- HEADER giống activity_category với search + sort -->
     <RelativeLayout
         android:id="@+id/headerLayout"
         android:layout_width="match_parent"
@@ -14,7 +13,6 @@
         android:clipToOutline="true"
         android:layout_alignParentTop="true">
 
-        <!-- Top bar (greeting + cart) -->
         <LinearLayout
             android:id="@+id/topBar"
             android:layout_width="match_parent"
@@ -58,7 +56,6 @@
             </FrameLayout>
         </LinearLayout>
 
-        <!-- Search bar + sort -->
         <LinearLayout
             android:id="@+id/searchSortLayout"
             android:layout_width="match_parent"
@@ -91,7 +88,6 @@
         </LinearLayout>
     </RelativeLayout>
 
-    <!-- RecyclerView 2 cột -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvFavorites"
         android:layout_width="match_parent"
@@ -102,7 +98,6 @@
         android:clipToPadding="false"
         android:scrollbars="none"/>
 
-    <!-- Bottom Navigation -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNav"
         android:layout_width="match_parent"
