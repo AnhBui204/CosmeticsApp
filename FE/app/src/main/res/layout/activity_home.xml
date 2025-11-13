@@ -7,7 +7,6 @@
     android:background="@android:color/white"
     tools:context=".ui.home.HomeActivity">
 
-    <!-- HEADER -->
     <RelativeLayout
         android:id="@+id/headerLayout"
         android:layout_width="match_parent"
@@ -17,7 +16,6 @@
         android:clipToOutline="true"
         android:layout_alignParentTop="true">
 
-        <!-- HÀNG CHỨA LỜI CHÀO + GIỎ HÀNG -->
         <LinearLayout
             android:id="@+id/topBar"
             android:layout_width="match_parent"
@@ -26,7 +24,6 @@
             android:gravity="center_vertical"
             android:baselineAligned="false">
 
-            <!-- Lời chào -->
             <TextView
                 android:id="@+id/tvGreeting"
                 android:layout_width="0dp"
@@ -38,13 +35,10 @@
                 android:textStyle="bold"
                 android:layout_marginTop="5dp"/>
 
-            <!-- Giỏ hàng -->
             <FrameLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp">
-
-
 
                 <ImageView
                     android:id="@+id/imgCart"
@@ -53,7 +47,6 @@
                     android:src="@drawable/ic_shopping_cart"
                     app:tint="@android:color/white" />
 
-                <!-- Badge số lượng -->
                 <TextView
                     android:id="@+id/tvCartCount"
                     android:layout_width="20dp"
@@ -69,7 +62,6 @@
             </FrameLayout>
         </LinearLayout>
 
-        <!-- Thanh search -->
         <EditText
             android:id="@+id/etSearch"
             android:layout_width="match_parent"
@@ -85,7 +77,6 @@
             android:textColor="@android:color/white"
             android:singleLine="true" />
 
-        <!-- Khu vực Delivery -->
         <LinearLayout
             android:id="@+id/deliveryLayout"
             android:layout_width="match_parent"
@@ -95,7 +86,6 @@
             android:orientation="horizontal"
             android:gravity="center">
 
-            <!-- Cột Delivery To -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -118,7 +108,6 @@
                     android:textSize="14sp" />
             </LinearLayout>
 
-            <!-- Cột Within -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -145,7 +134,6 @@
     </RelativeLayout>
 
 
-    <!-- NỘI DUNG CHÍNH -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -160,7 +148,6 @@
             android:layout_height="wrap_content"
             android:paddingBottom="90dp">
 
-            <!-- 2 Banner khuyến mãi -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -169,7 +156,6 @@
                 android:gravity="center"
                 android:weightSum="2">
 
-                <!-- Banner 1 -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -180,7 +166,6 @@
                     android:gravity="center_vertical"
                     android:layout_marginEnd="8dp">
 
-                    <!-- Text -->
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -209,7 +194,6 @@
                             android:textSize="12sp" />
                     </LinearLayout>
 
-                    <!-- Ảnh -->
                     <ImageView
                         android:layout_width="70dp"
                         android:layout_height="70dp"
@@ -219,7 +203,6 @@
                         android:contentDescription="Promo image" />
                 </LinearLayout>
 
-                <!-- Banner 2 -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -230,7 +213,6 @@
                     android:gravity="center_vertical"
                     android:layout_marginStart="8dp">
 
-                    <!-- Text -->
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -259,7 +241,6 @@
                             android:textSize="12sp" />
                     </LinearLayout>
 
-                    <!-- Ảnh -->
                     <ImageView
                         android:layout_width="70dp"
                         android:layout_height="70dp"
@@ -270,10 +251,6 @@
                 </LinearLayout>
             </LinearLayout>
 
-
-
-
-            <!-- Recommended -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -284,7 +261,6 @@
                 android:layout_marginTop="24dp"
                 android:layout_marginBottom="12dp" />
 
-            <!-- List sản phẩm -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerRecommended"
                 android:layout_width="match_parent"
@@ -293,7 +269,6 @@
                 android:paddingBottom="20dp"
                 android:overScrollMode="never" />
 
-            <!-- Your Total Savings & Time Saved -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -301,7 +276,6 @@
                 android:orientation="horizontal"
                 android:weightSum="2">
 
-                <!-- Your Total Savings -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -328,7 +302,6 @@
                         android:layout_marginTop="4dp" />
                 </LinearLayout>
 
-                <!-- Your Time Saved -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -356,7 +329,6 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- Deals on Skincare -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -367,7 +339,6 @@
                 android:layout_marginTop="24dp"
                 android:layout_marginBottom="12dp" />
 
-            <!-- Grid 2 cột cho Deals -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerDeals"
                 android:layout_width="match_parent"
@@ -377,7 +348,6 @@
 
         </LinearLayout>
     </ScrollView>
-    <!-- Bottom Navigation -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNav"
         android:layout_width="match_parent"
@@ -388,6 +358,5 @@
         app:itemIconTint="@color/nav_item_color"
         app:itemTextColor="@color/nav_item_color"
         app:labelVisibilityMode="labeled" />
-
 
 </RelativeLayout>
