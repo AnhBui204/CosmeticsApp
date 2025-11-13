@@ -6,7 +6,6 @@
     android:orientation="vertical"
     android:background="@android:color/white">
 
-    <!-- Header (same as product list) -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="75dp"
@@ -34,8 +33,6 @@
             android:textStyle="bold" />
     </RelativeLayout>
 
-
-    <!-- Scrollable form -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -117,7 +114,6 @@
                 android:prompt="@string/prompt_select_category"
                 android:background="@drawable/bg_edittext"/>
 
-            <!-- Image Picker -->
             <Button
                 android:id="@+id/btnPickImages"
                 android:layout_width="match_parent"
@@ -139,7 +135,6 @@
                     android:layout_height="wrap_content"/>
             </HorizontalScrollView>
 
-            <!-- Save button -->
             <Button
                 android:id="@+id/btnSaveProduct"
                 android:layout_width="match_parent"
@@ -153,7 +148,6 @@
 
     </ScrollView>
 
-    <!-- Bottom Navigation -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/sellerBottomNav"
         android:layout_width="match_parent"
