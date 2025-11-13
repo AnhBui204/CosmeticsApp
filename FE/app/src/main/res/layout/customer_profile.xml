@@ -5,7 +5,6 @@
     android:layout_height="match_parent"
     android:background="#FFFFFF">
 
-    <!-- ScrollView chứa nội dung profile -->
     <ScrollView
         android:id="@+id/scrollProfile"
         android:layout_width="match_parent"
@@ -18,7 +17,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <!-- Header -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
@@ -27,7 +25,6 @@
                 android:padding="16dp"
                 >
 
-                <!-- Avatar -->
                 <ImageView
                     android:id="@+id/imgAvatar"
                     android:layout_width="70dp"
@@ -39,7 +36,6 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"/>
 
-                <!-- Settings Icon -->
                 <ImageView
                     android:id="@+id/ivSettings"
                     android:layout_width="32dp"
@@ -52,7 +48,6 @@
                     app:layout_constraintTop_toTopOf="@id/imgAvatar"
                     app:layout_constraintBottom_toBottomOf="@id/imgAvatar"/>
 
-                <!-- Name + Email -->
                 <LinearLayout
                     android:id="@+id/layoutUserInfo"
                     android:orientation="vertical"
@@ -85,7 +80,6 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <!-- CardView Menu -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -99,7 +93,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
-                    <!-- Menu Item Template -->
                     <LinearLayout
                         android:id="@+id/menuItemAddress"
                         android:orientation="horizontal"
@@ -137,7 +130,6 @@
                         android:layout_height="1dp"
                         android:background="#EEEEEE"/>
 
-                    <!-- Payment -->
                     <LinearLayout
                         android:id="@+id/menuItemPayment"
                         android:orientation="horizontal"
@@ -175,7 +167,6 @@
                         android:layout_height="1dp"
                         android:background="#EEEEEE"/>
 
-                    <!-- My Order -->
                     <LinearLayout
                         android:id="@+id/menuItemMyOrder"
                         android:orientation="horizontal"
@@ -213,7 +204,6 @@
                         android:layout_height="1dp"
                         android:background="#EEEEEE"/>
 
-                    <!-- Wishlist -->
                     <LinearLayout
                         android:id="@+id/menuItemWishlist"
                         android:orientation="horizontal"
@@ -251,7 +241,6 @@
                         android:layout_height="1dp"
                         android:background="#EEEEEE"/>
 
-                    <!-- Rate this app -->
                     <LinearLayout
                         android:id="@+id/menuItemRate"
                         android:orientation="horizontal"
@@ -289,7 +278,6 @@
                         android:layout_height="1dp"
                         android:background="#EEEEEE"/>
 
-                    <!-- Logout -->
                     <LinearLayout
                         android:id="@+id/menuItemLogout"
                         android:orientation="horizontal"
@@ -328,7 +316,6 @@
         </LinearLayout>
     </ScrollView>
 
-    <!-- Bottom Navigation -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNav"
         android:layout_width="match_parent"
