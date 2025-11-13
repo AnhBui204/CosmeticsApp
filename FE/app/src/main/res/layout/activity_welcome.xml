@@ -5,7 +5,6 @@
     android:layout_height="match_parent"
     tools:context=".WelcomeActivity">
 
-    <!-- Ảnh nền (điều chỉnh scale ở đây) -->
     <ImageView
         android:id="@+id/bgImage"
         android:layout_width="match_parent"
@@ -14,13 +13,11 @@
         android:scaleType="centerCrop"
         android:adjustViewBounds="true" />
 
-    <!-- Lớp phủ mờ nhẹ để chữ dễ đọc -->
     <View
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#80000000" />
 
-    <!-- Nội dung chính ở giữa -->
     <LinearLayout
         android:orientation="vertical"
         android:gravity="center"
