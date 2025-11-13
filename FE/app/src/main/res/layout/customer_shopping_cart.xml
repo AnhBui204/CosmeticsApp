@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:background="@android:color/white">
 
-    <!-- Header -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="200dp"
@@ -59,7 +58,6 @@
             android:layout_centerHorizontal="true" />
     </RelativeLayout>
 
-    <!-- Mã giảm giá -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -71,7 +69,6 @@
         android:textStyle="bold"
         android:textSize="14sp" />
 
-    <!-- Danh sách sản phẩm -->
     <LinearLayout
         android:id="@+id/containerItems"
         android:layout_width="match_parent"
@@ -87,7 +84,6 @@
             android:layout_weight="1"
             android:scrollbars="vertical" />
 
-        <!-- Phần "+3 More" và "Edit" -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -117,7 +113,6 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Tổng kết -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
